@@ -1,0 +1,3 @@
+https://github.com/Kurene/simple-synthesizer-with-pyqt5-pyaudio/blob/master/main.py
+https://www.mathsisfun.com/algebra/amplitude-period-frequency-phase-shift.html
+http://www.fon.hum.uva.nl/praat/manual/Sounds__Concatenate_with_overlap___.html
