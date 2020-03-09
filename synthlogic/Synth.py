@@ -25,6 +25,8 @@ class Synth:
         self.pufferY = np.zeros(self.fadeSeq)
         self.rate = int(rate)
         self.chunk = chunk
+        self.buffer = np.zeros(chunk)
+        self.delayedSignal = np.zeros(chunk)
         self.p = pyaudio.PyAudio()
         self.stream = self.p.open(format=pyaudio.paFloat32,
                                   channels=1,
@@ -88,9 +90,22 @@ class Synth:
         else:
             return chunk
 
+    # def feedbackComb(self, y, g, M):
+    #
+    #     return self.y + g*self.feedbackComb()
+    #
+    #     result = 0
+    #     for i in range(steps):
+    #         self.
+    #         self.delayedSignal[:M] = self.y[-M:]
+    #         self.delayedSignal[M:] = self.y[:-M]
+    #         self.y = self.y + 0.7 * self.delayedSignal
+    #
+
     def render(self):
         start = 0
         end = self.chunk
+        M = self.rate*100
 
         #TODO gemeinsames vielfaches, offset wieder bei 0 anfangen.. sonst gehts gegen unendlich
         while self.stream.is_active():
@@ -101,6 +116,15 @@ class Synth:
             #self.y = self.signal(self.waveform[self.selectedWaveform], currentFreq, self.x)
             self.y = self.cleanSignal(self.y, self.pufferY)
             self.y = self.addEnvelope(self.y, end)
+            #ff comb filter
+            #self.delayedSignal[:M] = self.buffer[-M:]
+            #self.delayedSignal[M:] = self.y[:-M]
+            #self.y = self.y + 0.7*self.delayedSignal
+            #fb comb filter
+            for i in range(2):
+                self.delayedSignal[:M] = self.y[-M:]
+                self.delayedSignal[M:] = self.y[:-M]
+                self.y = self.y + 0.7*self.delayedSignal
 
             chunk = self.y * self.gain
             self.stream.write(chunk.astype(np.float32).tostring())
@@ -108,6 +132,7 @@ class Synth:
             self.pufferX = np.arange(end, end+self.fadeSeq)/self.rate
             self.pufferY = self.style(self.selectedStyle, self.pufferX, currentFreq)
             #self.pufferY = self.signal(self.waveform[self.selectedWaveform], currentFreq, self.pufferX)
+            self.buffer = self.y
 
             start = end
             end += self.chunk

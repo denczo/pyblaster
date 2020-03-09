@@ -2,9 +2,10 @@ from tkinter import *
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from synthlogic.Synth import Synth
+import threading
 
 master = Tk()
-master.title("DRUMHEAD BLASTER")
+master.title("EARDRUM BLASTER")
 
 
 # all rows and columns scaleable
@@ -19,10 +20,12 @@ def updatePlot():
     global axis, canvas
 
     axis.cla()
-    axis.grid()
+    #axis.grid()
+    axis.set_yticklabels([])
+    axis.set_xticklabels([])
     axis.plot(synth.x, synth.y)
     canvas.draw()
-    master.after(500, updatePlot)
+    master.after(10, updatePlot)
 
 
 
@@ -30,7 +33,10 @@ def updatePlot():
 fig = Figure(figsize=(3, 3),facecolor='#f0f0f0')
 axis = fig.add_subplot(111)
 canvas = FigureCanvasTkAgg(fig, master=master)
-updatePlot()
+
+t = threading.Thread(target=updatePlot())
+t.start()
+#updatePlot()
 
 group1 = StringVar()
 group2 = StringVar()
