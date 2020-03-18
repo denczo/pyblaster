@@ -3,11 +3,14 @@ import numpy as np
 from scipy import signal
 import threading
 from synthlogic.EnvelopeGen import EnvelopeGen
+from synthlogic.Filter import Filter
+
 
 class Synth:
     def __init__(self, rate=44100, chunk=1024, gain=0.1, fadeSeq=20):
 
         self.envGen = EnvelopeGen()
+        self.filter = Filter()
         #self.envGen.setAttack(100)
         self.waveform = ["sine", "triangle", "sawtooth", "square"]
         self.selectedStyle = 0
@@ -26,7 +29,10 @@ class Synth:
         self.rate = int(rate)
         self.chunk = chunk
         self.buffer = np.zeros(chunk)
-        self.delayedSignal = np.zeros(chunk)
+        self.delayedX = np.zeros(chunk)
+        self.delayedY = np.zeros(chunk)
+        self.previousX = np.zeros(chunk)
+        self.previousY = np.zeros(chunk)
         self.p = pyaudio.PyAudio()
         self.stream = self.p.open(format=pyaudio.paFloat32,
                                   channels=1,
@@ -90,22 +96,10 @@ class Synth:
         else:
             return chunk
 
-    # def feedbackComb(self, y, g, M):
-    #
-    #     return self.y + g*self.feedbackComb()
-    #
-    #     result = 0
-    #     for i in range(steps):
-    #         self.
-    #         self.delayedSignal[:M] = self.y[-M:]
-    #         self.delayedSignal[M:] = self.y[:-M]
-    #         self.y = self.y + 0.7 * self.delayedSignal
-    #
-
     def render(self):
         start = 0
         end = self.chunk
-        M = self.rate*100
+        M = 337
 
         #TODO gemeinsames vielfaches, offset wieder bei 0 anfangen.. sonst gehts gegen unendlich
         while self.stream.is_active():
@@ -116,15 +110,19 @@ class Synth:
             #self.y = self.signal(self.waveform[self.selectedWaveform], currentFreq, self.x)
             self.y = self.cleanSignal(self.y, self.pufferY)
             self.y = self.addEnvelope(self.y, end)
-            #ff comb filter
-            #self.delayedSignal[:M] = self.buffer[-M:]
-            #self.delayedSignal[M:] = self.y[:-M]
-            #self.y = self.y + 0.7*self.delayedSignal
+
+
+            #delayedSignal = self.filter.feedbackComb(self.y, 0.7, 879, self.previousX)
+            #self.previousX = self.y
+            #self.y = delayedSignal
+
             #fb comb filter
-            for i in range(2):
-                self.delayedSignal[:M] = self.y[-M:]
-                self.delayedSignal[M:] = self.y[:-M]
-                self.y = self.y + 0.7*self.delayedSignal
+            #self.delayedY[:M] = self.previousY[-M:]
+            #self.delayedY[M:] = self.y[:-M]
+            #self.y = self.delayedX + 0.9*self.delayedY
+            #self.y = self.y + 0.7*self.delayedX - 0.7*self.delayedY
+
+            #self.delayedY = self.y
 
             chunk = self.y * self.gain
             self.stream.write(chunk.astype(np.float32).tostring())
@@ -132,7 +130,7 @@ class Synth:
             self.pufferX = np.arange(end, end+self.fadeSeq)/self.rate
             self.pufferY = self.style(self.selectedStyle, self.pufferX, currentFreq)
             #self.pufferY = self.signal(self.waveform[self.selectedWaveform], currentFreq, self.pufferX)
-            self.buffer = self.y
+            #self.buffer = self.y
 
             start = end
             end += self.chunk
