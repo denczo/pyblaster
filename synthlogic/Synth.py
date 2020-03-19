@@ -3,14 +3,13 @@ import numpy as np
 from scipy import signal
 import threading
 from synthlogic.EnvelopeGen import EnvelopeGen
-from synthlogic.Filter import Filter
+from synthlogic.Filter.FeedforwardComb import FeedforwardComb
 
 
 class Synth:
     def __init__(self, rate=44100, chunk=1024, gain=0.1, fadeSeq=20):
 
         self.envGen = EnvelopeGen()
-        self.filter = Filter()
         #self.envGen.setAttack(100)
         self.waveform = ["sine", "triangle", "sawtooth", "square"]
         self.selectedStyle = 0
@@ -100,6 +99,8 @@ class Synth:
         start = 0
         end = self.chunk
         M = 337
+        ffcomb = FeedforwardComb(0.7, M, self.chunk)
+
 
         #TODO gemeinsames vielfaches, offset wieder bei 0 anfangen.. sonst gehts gegen unendlich
         while self.stream.is_active():
@@ -111,7 +112,7 @@ class Synth:
             self.y = self.cleanSignal(self.y, self.pufferY)
             self.y = self.addEnvelope(self.y, end)
 
-
+            self.y = ffcomb.output(self.y, 0.7, M)
             #delayedSignal = self.filter.feedbackComb(self.y, 0.7, 879, self.previousX)
             #self.previousX = self.y
             #self.y = delayedSignal

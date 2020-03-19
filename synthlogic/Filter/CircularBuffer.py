@@ -1,11 +1,18 @@
 from numpy import *
 
+
 class CircularBuffer:
 
     def __init__(self, maxLength):
         self.circularBuffer = zeros(maxLength)
         self.maxLength = maxLength
         self.bufferPos = 0
+
+    def __getitem__(self, item):
+        return self.circularBuffer[item]
+
+    def __len__(self):
+        return self.maxLength
 
     def add(self, x):
 
@@ -22,12 +29,15 @@ class CircularBuffer:
 
         self.bufferPos = lengthBuffer % self.maxLength
 
-# testBuffer = CircularBuffer(10)
 #
+# testBuffer = CircularBuffer(10)
+# #
 # x = arange(0,5)
 # y = arange(10,17)
 # z = arange(20,27)
 # testBuffer.add(x)
+# print(testBuffer[:-6])
+
 # print(testBuffer.circularBuffer)
 # testBuffer.add(y)
 # print(testBuffer.circularBuffer)
