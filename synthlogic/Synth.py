@@ -3,14 +3,16 @@ import numpy as np
 from scipy import signal
 import threading
 from synthlogic.EnvelopeGen import EnvelopeGen
-from synthlogic.Filter.FeedforwardComb import FeedforwardComb
+from synthlogic.Filter.Allpass import Allpass
+from synthlogic.Filter.FeedForwardComb import FeedForwardComb
+from synthlogic.Filter.FeedbackComb import FeedbackComb
 
 
 class Synth:
     def __init__(self, rate=44100, chunk=1024, gain=0.1, fadeSeq=20):
 
         self.envGen = EnvelopeGen()
-        #self.envGen.setAttack(100)
+        # self.envGen.setAttack(100)
         self.waveform = ["sine", "triangle", "sawtooth", "square"]
         self.selectedStyle = 0
         self.selectedWaveform = 0
@@ -40,7 +42,6 @@ class Synth:
                                   frames_per_buffer=chunk)
         self.stream.stop_stream()
 
-
     def setWaveform(self, val):
         self.selectedWaveform = val
 
@@ -69,7 +70,7 @@ class Synth:
         elif type == "sawtooth":
             return signal.sawtooth(2 * np.pi * int(freq) * x, 1)
         elif type == "square":
-            return signal.square(2* np.pi * int(freq) * x)
+            return signal.square(2 * np.pi * int(freq) * x)
         elif type == "triangle":
             return signal.sawtooth(2 * np.pi * int(freq) * x, 0.5)
 
@@ -77,15 +78,15 @@ class Synth:
         y = self.signal(self.waveform[self.selectedWaveform], freq, x)
         waves = int(type)
         for i in range(waves):
-            y = np.add(y, self.signal(self.waveform[self.selectedWaveform], int(freq)*(waves-i), x))
+            y = np.add(y, self.signal(self.waveform[self.selectedWaveform], int(freq) * (waves - i), x))
         return y
 
     def cleanSignal(self, signal, puffer):
-        puffer = [a*b for a, b in zip(self.coefficientsR, puffer)]
-        signal[:self.fadeSeq] = [a*b for a, b in zip(self.coefficients, signal[:self.fadeSeq])]
+        puffer = [a * b for a, b in zip(self.coefficientsR, puffer)]
+        signal[:self.fadeSeq] = [a * b for a, b in zip(self.coefficients, signal[:self.fadeSeq])]
         signal[:self.fadeSeq] += puffer
 
-        #signal[-self.fadeSeq:] = [a*b for a, b in zip(self.coefficientsR, signal[-self.fadeSeq:])]
+        # signal[-self.fadeSeq:] = [a*b for a, b in zip(self.coefficientsR, signal[-self.fadeSeq:])]
         return signal
 
     def addEnvelope(self, chunk, chunkPos):
@@ -98,40 +99,32 @@ class Synth:
     def render(self):
         start = 0
         end = self.chunk
-        M = 337
-        ffcomb = FeedforwardComb(0.7, M, self.chunk)
+        M = 1024
+        #ffcomb = FeedForwardComb(0.9, M, self.chunk)
+        #fbcomb = FeedbackComb(self.chunk*2)
+        allpass = Allpass(self.chunk*2)
 
-
-        #TODO gemeinsames vielfaches, offset wieder bei 0 anfangen.. sonst gehts gegen unendlich
+        # TODO gemeinsames vielfaches, offset wieder bei 0 anfangen.. sonst gehts gegen unendlich
         while self.stream.is_active():
             currentFreq = self.frequency
-            self.x = np.arange(start, end)/self.rate
+            self.x = np.arange(start, end) / self.rate
 
             self.y = self.style(self.selectedStyle, self.x, currentFreq)
-            #self.y = self.signal(self.waveform[self.selectedWaveform], currentFreq, self.x)
+            # self.y = self.signal(self.waveform[self.selectedWaveform], currentFreq, self.x)
             self.y = self.cleanSignal(self.y, self.pufferY)
             self.y = self.addEnvelope(self.y, end)
 
-            self.y = ffcomb.output(self.y, 0.7, M)
-            #delayedSignal = self.filter.feedbackComb(self.y, 0.7, 879, self.previousX)
-            #self.previousX = self.y
-            #self.y = delayedSignal
-
-            #fb comb filter
-            #self.delayedY[:M] = self.previousY[-M:]
-            #self.delayedY[M:] = self.y[:-M]
-            #self.y = self.delayedX + 0.9*self.delayedY
-            #self.y = self.y + 0.7*self.delayedX - 0.7*self.delayedY
-
-            #self.delayedY = self.y
+            # self.y = ffcomb.output(self.y, 0.7, M)
+            # self.y = fbcomb.output(self.y, 0.7, M)
+            self.y = allpass.output(self.y, 0.7, 0.7, M)
 
             chunk = self.y * self.gain
             self.stream.write(chunk.astype(np.float32).tostring())
 
-            self.pufferX = np.arange(end, end+self.fadeSeq)/self.rate
+            self.pufferX = np.arange(end, end + self.fadeSeq) / self.rate
             self.pufferY = self.style(self.selectedStyle, self.pufferX, currentFreq)
-            #self.pufferY = self.signal(self.waveform[self.selectedWaveform], currentFreq, self.pufferX)
-            #self.buffer = self.y
+            # self.pufferY = self.signal(self.waveform[self.selectedWaveform], currentFreq, self.pufferX)
+            # self.buffer = self.y
 
             start = end
             end += self.chunk

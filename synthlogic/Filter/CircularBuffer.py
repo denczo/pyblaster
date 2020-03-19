@@ -19,8 +19,10 @@ class CircularBuffer:
         lengthX = len(x)
         lengthBuffer = self.bufferPos + lengthX
 
+        # when there is enough space to save x without splitting
         if lengthBuffer <= self.maxLength:
             self.circularBuffer[self.bufferPos:lengthBuffer] = x
+        # when x will exceed the buffer size and need to be split
         else:
             bufferLeft = self.maxLength - self.bufferPos
             end = lengthX - bufferLeft
@@ -28,18 +30,6 @@ class CircularBuffer:
             self.circularBuffer[:end] = x[bufferLeft:]
 
         self.bufferPos = lengthBuffer % self.maxLength
-
-#
-# testBuffer = CircularBuffer(10)
-# #
-# x = arange(0,5)
-# y = arange(10,17)
-# z = arange(20,27)
-# testBuffer.add(x)
-# print(testBuffer[:-6])
-
-# print(testBuffer.circularBuffer)
-# testBuffer.add(y)
-# print(testBuffer.circularBuffer)
-# testBuffer.add(z)
-# print(testBuffer.circularBuffer)
+        # rolls, so that newest entries are always at the end of the circularBuffer
+        self.circularBuffer = roll(self.circularBuffer, -self.bufferPos)
+        self.bufferPos = 0
