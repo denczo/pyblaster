@@ -11,7 +11,7 @@ class Synth:
     def __init__(self, rate=44100, chunk=1024, gain=0.1, fadeSeq=512):
 
         self.envGen = EnvelopeGen()
-        self.BUFFERSIZE = 44032
+        self.BUFFERSIZE = 22016
         # self.envGen.setAttack(100)
         self.reverb = 1
         self.waveform = ["sine", "triangle", "sawtooth", "square"]
@@ -43,8 +43,11 @@ class Synth:
         self.selectedWaveform = val
 
     def setReverb(self, val):
-        self.reverb = val
+        actualVal = self.convert2Value(val, self.BUFFERSIZE)
+        self.reverb = actualVal
 
+    def convert2Value(self, percentage, max):
+        return max/100*int(percentage)
 
     def setStyle(self, val):
         self.selectedStyle = val
