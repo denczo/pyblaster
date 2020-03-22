@@ -4,15 +4,16 @@ from scipy import signal
 import threading
 from synthlogic.EnvelopeGen import EnvelopeGen
 from synthlogic.Filter.Allpass import Allpass
-from synthlogic.Filter.FeedForwardComb import FeedForwardComb
-from synthlogic.Filter.FeedbackComb import FeedbackComb
+from scipy.io import wavfile
 
 
 class Synth:
-    def __init__(self, rate=44100, chunk=1024, gain=0.1, fadeSeq=20):
+    def __init__(self, rate=44100, chunk=1024, gain=0.1, fadeSeq=512):
 
         self.envGen = EnvelopeGen()
+        self.BUFFERSIZE = 44032
         # self.envGen.setAttack(100)
+        self.reverb = 1
         self.waveform = ["sine", "triangle", "sawtooth", "square"]
         self.selectedStyle = 0
         self.selectedWaveform = 0
@@ -30,10 +31,6 @@ class Synth:
         self.rate = int(rate)
         self.chunk = chunk
         self.buffer = np.zeros(chunk)
-        self.delayedX = np.zeros(chunk)
-        self.delayedY = np.zeros(chunk)
-        self.previousX = np.zeros(chunk)
-        self.previousY = np.zeros(chunk)
         self.p = pyaudio.PyAudio()
         self.stream = self.p.open(format=pyaudio.paFloat32,
                                   channels=1,
@@ -44,6 +41,10 @@ class Synth:
 
     def setWaveform(self, val):
         self.selectedWaveform = val
+
+    def setReverb(self, val):
+        self.reverb = val
+
 
     def setStyle(self, val):
         self.selectedStyle = val
@@ -81,6 +82,13 @@ class Synth:
             y = np.add(y, self.signal(self.waveform[self.selectedWaveform], int(freq) * (waves - i), x))
         return y
 
+    def addEnvelope(self, chunk, chunkPos):
+
+        if chunkPos < self.envGen.attackRange:
+            return self.envGen.attack(chunk, chunkPos)
+        else:
+            return chunk
+
     def cleanSignal(self, signal, puffer):
         puffer = [a * b for a, b in zip(self.coefficientsR, puffer)]
         signal[:self.fadeSeq] = [a * b for a, b in zip(self.coefficients, signal[:self.fadeSeq])]
@@ -89,23 +97,20 @@ class Synth:
         # signal[-self.fadeSeq:] = [a*b for a, b in zip(self.coefficientsR, signal[-self.fadeSeq:])]
         return signal
 
-    def addEnvelope(self, chunk, chunkPos):
-
-        if chunkPos < self.envGen.attackRange:
-            return self.envGen.attack(chunk, chunkPos)
-        else:
-            return chunk
-
     def render(self):
         start = 0
         end = self.chunk
-        M = 1024
-        #ffcomb = FeedForwardComb(0.9, M, self.chunk)
-        #fbcomb = FeedbackComb(self.chunk*2)
-        allpass = Allpass(self.chunk*2)
+        g1 = 0.7
+        g2 = 0.7
+        #M = 10000
+        allpass = Allpass(self.BUFFERSIZE)
+
+        # debug
+        frames = np.zeros(0)
 
         # TODO gemeinsames vielfaches, offset wieder bei 0 anfangen.. sonst gehts gegen unendlich
         while self.stream.is_active():
+            M = int(self.reverb)
             currentFreq = self.frequency
             self.x = np.arange(start, end) / self.rate
 
@@ -114,17 +119,20 @@ class Synth:
             self.y = self.cleanSignal(self.y, self.pufferY)
             self.y = self.addEnvelope(self.y, end)
 
-            # self.y = ffcomb.output(self.y, 0.7, M)
-            # self.y = fbcomb.output(self.y, 0.7, M)
-            self.y = allpass.output(self.y, 0.7, 0.7, M)
+            self.y = allpass.output(self.y, g1, g2, M)
 
             chunk = self.y * self.gain
+            #frames = np.append(frames, chunk)
+
             self.stream.write(chunk.astype(np.float32).tostring())
 
             self.pufferX = np.arange(end, end + self.fadeSeq) / self.rate
             self.pufferY = self.style(self.selectedStyle, self.pufferX, currentFreq)
-            # self.pufferY = self.signal(self.waveform[self.selectedWaveform], currentFreq, self.pufferX)
-            # self.buffer = self.y
 
             start = end
             end += self.chunk
+
+        self.stream.stop_stream()
+        self.stream.close()
+        self.p.terminate()
+        #wavfile.write('recorded.wav', 44100, frames)
