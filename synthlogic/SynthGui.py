@@ -24,7 +24,7 @@ def updatePlot():
     # every 10ms; raise, to improve performance
     master.after(10, updatePlot)
 
-WIDTH_RB = 20
+WIDTH_RB = 50
 FIRST_COLUMN = 0
 SECOND_COLUMN = FIRST_COLUMN + 1
 
@@ -92,11 +92,19 @@ group2 = StringVar()
 group1.set(1)
 group2.set(1)
 
+sineIcon = PhotoImage(file="icons/sine.png")
+triangleIcon = PhotoImage(file="icons/triangle.png")
+sawtoothIcon = PhotoImage(file="icons/sawtooth.png")
+squareIcon = PhotoImage(file="icons/square.png")
+
 # waveform options
-Radiobutton(frameWave, variable=group1, text="Sine", value=1, indicatoron=0, width=WIDTH_RB, command=lambda: [synth.setWaveform(0)]).grid(row=FIRST_ROW,column=FIRST_COLUMN, padx=PAD_X_W, pady=(PAD_Y_W, 0))
-Radiobutton(frameWave, variable=group1, text="Sawtooth", value=3, indicatoron=0, width=WIDTH_RB, command=lambda: [synth.setWaveform(2)]).grid(row=SECOND_ROW,column=FIRST_COLUMN, padx=PAD_X_W, pady=PAD_Y_W)
-Radiobutton(frameWave, variable=group1, text="Triangle", value=2, indicatoron=0, width=WIDTH_RB, command=lambda: [synth.setWaveform(1)]).grid(row=FIRST_ROW,column=SECOND_COLUMN, padx=PAD_X_W, pady=(PAD_Y_W, 0))
-Radiobutton(frameWave, variable=group1, text="Square", value=4, indicatoron=0, width=WIDTH_RB, command=lambda: [synth.setWaveform(3)]).grid(row=SECOND_ROW,column=SECOND_COLUMN, padx=PAD_X_W, pady=PAD_Y_W)
+rSine = Radiobutton(frameWave, image=sineIcon, variable=group1, text="Sine", value=1, indicatoron=0, width=WIDTH_RB, command=lambda: [synth.setWaveform(0)]).grid(row=FIRST_ROW,column=FIRST_COLUMN, padx=PAD_X_W, pady=(PAD_Y_W, 0))
+rSaw = Radiobutton(frameWave, image=sawtoothIcon, variable=group1, text="Sawtooth", value=3, indicatoron=0, width=WIDTH_RB, command=lambda: [synth.setWaveform(2)]).grid(row=SECOND_ROW,column=FIRST_COLUMN, padx=PAD_X_W, pady=PAD_Y_W)
+rTriangle = Radiobutton(frameWave, image=triangleIcon, variable=group1, text="Triangle", value=2, indicatoron=0, width=WIDTH_RB, command=lambda: [synth.setWaveform(1)]).grid(row=FIRST_ROW,column=SECOND_COLUMN, padx=PAD_X_W, pady=(PAD_Y_W, 0))
+rSquare = Radiobutton(frameWave, image=squareIcon, variable=group1, text="Square", value=4, indicatoron=0, width=WIDTH_RB, command=lambda: [synth.setWaveform(3)]).grid(row=SECOND_ROW,column=SECOND_COLUMN, padx=PAD_X_W, pady=PAD_Y_W)
+
+
+
 
 # style options
 Radiobutton(frameStyle, variable=group2, text="Mono", value=1, indicatoron=0, width=WIDTH_RB, command=lambda: [synth.setStyle(1)]).grid(row=THIRD_ROW,column=FIRST_COLUMN, padx=PAD_X_W, pady=(PAD_Y_W, 0))
