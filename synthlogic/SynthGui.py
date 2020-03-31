@@ -7,7 +7,7 @@ import threading
 master = Tk()
 master.title("EARDRUM BLASTER")
 master.resizable(width=False, height=False)
-master.geometry('468x515')
+master.geometry('468x565')
 
 synth = Synth()
 
@@ -24,7 +24,13 @@ def updatePlot():
     # every 10ms; raise, to improve performance
     master.after(10, updatePlot)
 
-WIDTH_RB = 50
+
+def updateBtnText():
+    playBtn.configure(text=synth.status)
+
+WIDTH_IMG = 142
+WIDTH_RB = 20
+HEIGHT_RB = 30
 FIRST_COLUMN = 0
 SECOND_COLUMN = FIRST_COLUMN + 1
 
@@ -98,24 +104,27 @@ sawtoothIcon = PhotoImage(file="icons/sawtooth.png")
 squareIcon = PhotoImage(file="icons/square.png")
 
 # waveform options
-rSine = Radiobutton(frameWave, image=sineIcon, variable=group1, text="Sine", value=1, indicatoron=0, width=WIDTH_RB, command=lambda: [synth.setWaveform(0)]).grid(row=FIRST_ROW,column=FIRST_COLUMN, padx=PAD_X_W, pady=(PAD_Y_W, 0))
-rSaw = Radiobutton(frameWave, image=sawtoothIcon, variable=group1, text="Sawtooth", value=3, indicatoron=0, width=WIDTH_RB, command=lambda: [synth.setWaveform(2)]).grid(row=SECOND_ROW,column=FIRST_COLUMN, padx=PAD_X_W, pady=PAD_Y_W)
-rTriangle = Radiobutton(frameWave, image=triangleIcon, variable=group1, text="Triangle", value=2, indicatoron=0, width=WIDTH_RB, command=lambda: [synth.setWaveform(1)]).grid(row=FIRST_ROW,column=SECOND_COLUMN, padx=PAD_X_W, pady=(PAD_Y_W, 0))
-rSquare = Radiobutton(frameWave, image=squareIcon, variable=group1, text="Square", value=4, indicatoron=0, width=WIDTH_RB, command=lambda: [synth.setWaveform(3)]).grid(row=SECOND_ROW,column=SECOND_COLUMN, padx=PAD_X_W, pady=PAD_Y_W)
+rSine = Radiobutton(frameWave, image=sineIcon, variable=group1, value=1, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setWaveform(0)]).grid(row=FIRST_ROW, column=FIRST_COLUMN, padx=PAD_X_W, pady=(PAD_Y_W, 0))
+rSaw = Radiobutton(frameWave, image=sawtoothIcon, variable=group1, value=3, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setWaveform(2)]).grid(row=SECOND_ROW, column=FIRST_COLUMN, padx=PAD_X_W, pady=PAD_Y_W)
+rTriangle = Radiobutton(frameWave, image=triangleIcon, variable=group1, value=2, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setWaveform(1)]).grid(row=FIRST_ROW, column=SECOND_COLUMN, padx=PAD_X_W, pady=(PAD_Y_W, 0))
+rSquare = Radiobutton(frameWave, image=squareIcon, variable=group1, value=4, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setWaveform(3)]).grid(row=SECOND_ROW, column=SECOND_COLUMN, padx=PAD_X_W, pady=PAD_Y_W)
 
-
-
+monoIcon = PhotoImage(file="icons/mono.png")
+duoIcon = PhotoImage(file="icons/duo.png")
+trioIcon = PhotoImage(file="icons/trio.png")
+quattroIcon = PhotoImage(file="icons/quattro.png")
 
 # style options
-Radiobutton(frameStyle, variable=group2, text="Mono", value=1, indicatoron=0, width=WIDTH_RB, command=lambda: [synth.setStyle(1)]).grid(row=THIRD_ROW,column=FIRST_COLUMN, padx=PAD_X_W, pady=(PAD_Y_W, 0))
-Radiobutton(frameStyle, variable=group2, text="Duo", value=2, indicatoron=0, width=WIDTH_RB, command=lambda: [synth.setStyle(2)]).grid(row=THIRD_ROW,column=SECOND_COLUMN, padx=PAD_X_W, pady=(PAD_Y_W, 0))
-Radiobutton(frameStyle, variable=group2, text="Trio", value=3, indicatoron=0, width=WIDTH_RB, command=lambda: [synth.setStyle(3)]).grid(row=FOURTH_ROW,column=FIRST_COLUMN, padx=PAD_X_W, pady=PAD_Y_W)
-Radiobutton(frameStyle, variable=group2, text="Quad", value=4, indicatoron=0, width=WIDTH_RB, command=lambda: [synth.setStyle(4)]).grid(row=FOURTH_ROW,column=SECOND_COLUMN, padx=PAD_X_W, pady=PAD_Y_W)
+Radiobutton(frameStyle, variable=group2, image=monoIcon, value=1, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(1)]).grid(row=THIRD_ROW,column=FIRST_COLUMN, padx=PAD_X_W, pady=(PAD_Y_W, 0))
+Radiobutton(frameStyle, variable=group2, image=duoIcon, value=2, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(2)]).grid(row=THIRD_ROW,column=SECOND_COLUMN, padx=PAD_X_W, pady=(PAD_Y_W, 0))
+Radiobutton(frameStyle, variable=group2, image=trioIcon, value=3, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(3)]).grid(row=FOURTH_ROW,column=FIRST_COLUMN, padx=PAD_X_W, pady=PAD_Y_W)
+Radiobutton(frameStyle, variable=group2, image=quattroIcon, value=4, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(4)]).grid(row=FOURTH_ROW,column=SECOND_COLUMN, padx=PAD_X_W, pady=PAD_Y_W)
 
 # frequency
 canvas._tkcanvas.grid(row=FIRST_ROW, column=FIRST_COLUMN, columnspan=3)
 w = Scale(frameFreq, from_=0, to=1000, length=200, orient=HORIZONTAL, resolution=1, command=lambda x: [synth.setFrequency(x)]).grid(row=SECOND_ROW, column=FIRST_COLUMN, columnspan=3, sticky=E+W, padx=PAD_X_W, pady=PAD_Y_W)
-Button(frameFreq, text='Play', command=lambda: [synth.toggle()]).grid(row=THIRD_ROW, column=FIRST_COLUMN, columnspan=3, sticky=E+W, padx=PAD_X_W, pady=PAD_Y_W)
+playBtn = Button(frameFreq, text=synth.status, command=lambda: [synth.toggle(), updateBtnText()])
+playBtn.grid(row=THIRD_ROW, column=FIRST_COLUMN, columnspan=3, sticky=E+W, padx=PAD_X_W, pady=PAD_Y_W)
 
 # envelope
 attack = Scale(frameEnv, from_=100, to=0, length=100, command=synth.envGen.setAttack).grid(row=FIRST_ROW, column=FIRST_COLUMN, padx=PAD_X_W, pady=PAD_Y_W)
