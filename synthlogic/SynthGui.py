@@ -7,7 +7,16 @@ import threading
 master = Tk()
 master.title("EARDRUM BLASTER")
 master.resizable(width=False, height=False)
-master.geometry('468x565')
+winWidth = 468
+winHeight = 565
+windowSize = str(winHeight)+'x'+str(winHeight)
+master.geometry(windowSize)
+screenWidth = master.winfo_screenwidth()
+screenHeight = master.winfo_screenheight()
+startX = int((screenWidth/2) - (winWidth/2))
+startY = int((screenHeight/2) - (winHeight/2))
+master.geometry('{}x{}+{}+{}'.format(winWidth, winHeight, startX, startY))
+
 
 synth = Synth()
 
