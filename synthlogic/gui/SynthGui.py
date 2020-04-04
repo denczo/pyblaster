@@ -24,15 +24,15 @@ synth = Synth()
 
 def updatePlot():
     global axis, canvas
-
-    axis.cla()
+    pass
+    #axis.cla()
     #axis.grid()
-    axis.set_yticklabels([])
-    axis.set_xticklabels([])
-    axis.plot(synth.x, synth.y, color='black')
-    canvas.draw()
+    #axis.set_yticklabels([])
+    #axis.set_xticklabels([])
+    #axis.plot(synth.x, synth.y)
+    #canvas.draw()
     # every 10ms; raise, to improve performance
-    master.after(10, updatePlot)
+    #master.after(1000, updatePlot)
 
 
 def updateBtnText():

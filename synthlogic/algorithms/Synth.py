@@ -64,6 +64,7 @@ class Synth:
         self.valueStyle = ValueCarrier()
         self.valueFrequency = ValueCarrier()
 
+
     def setWaveform(self, val):
         self.selectedWaveform = val
 
