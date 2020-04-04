@@ -2,7 +2,7 @@ import numpy as np
 
 
 class EnvelopeGen:
-
+    #TODO LOT TO DO, increase performance!
     def __init__(self, chunkSize=1024):
         self.chunkSize = chunkSize
         self.attackRange = 0

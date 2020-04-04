@@ -2,11 +2,11 @@ import pyaudio
 import numpy as np
 from scipy import signal
 import threading
-from synthlogic.EnvelopeGen import EnvelopeGen
+from synthlogic.algorithms.EnvelopeGen import EnvelopeGen
 from synthlogic.Filter.Allpass import Allpass
-from scipy.io import wavfile
 
 from synthlogic.Filter.MovingAverage import MovingAverage
+from synthlogic.algorithms.ValueCarrier import ValueCarrier
 
 
 class Synth:
@@ -45,13 +45,27 @@ class Synth:
         self.running = False
         self.status = 'PLAY'
         self.buffer = 0
+        # setter; tkinter needs objects to pass commands as parameter
+        self.valueWaveform = ValueCarrier()
+
+        # values for waveforms
+        self.valueSine = ValueCarrier()
+        self.valueSawtooth = ValueCarrier()
+        self.valueTriangle = ValueCarrier()
+        self.valueSquare = ValueCarrier()
+
+        # values for effects
+        self.valueReverb = ValueCarrier()
+        self.valueFlanger = ValueCarrier()
+        self.valueCutoff = ValueCarrier()
+        self.valueDelay = ValueCarrier()
+
+        self.valueAttack = ValueCarrier()
+        self.valueStyle = ValueCarrier()
+        self.valueFrequency = ValueCarrier()
 
     def setWaveform(self, val):
         self.selectedWaveform = val
-
-    def setReverb(self, val):
-        actualVal = self.convert2Value(val, self.writeable)
-        self.reverb = actualVal
 
     def convert2Value(self, percentage, max):
         return max/100*int(percentage)
@@ -88,16 +102,56 @@ class Synth:
         elif type == "triangle":
             return signal.sawtooth(2 * np.pi * int(freq) * x, 0.5)
 
+    def sineWave(self, freq, x, gain):
+        if gain > 0 :
+            return gain * np.sin(2 * np.pi * int(freq) * x)
+        else:
+            return np.zeros(len(x))
+
+    def sawtoothWave(self, freq, x, gain):
+        if gain > 0:
+            return gain * signal.sawtooth(2 * np.pi * int(freq) * x, 1)
+        else:
+            return np.zeros(len(x))
+
+    def triangleWave(self, freq, x, gain):
+        if gain > 0:
+            return gain * signal.sawtooth(2 * np.pi * int(freq) * x, 0.5)
+        else:
+            return np.zeros(len(x))
+
+    def squareWave(self, freq, x, gain):
+        if gain > 0:
+            return gain * signal.square(2 * np.pi * int(freq) * x)
+        else:
+            return np.zeros(len(x))
+
+    def oscillator(self, freq, x):
+        sine = self.sineWave(freq, x, int(self.valueSine.getValue())/100)
+        saw = self.sawtoothWave(freq, x, int(self.valueSawtooth.getValue())/100)
+        triangle = self.triangleWave(freq, x, int(self.valueTriangle.getValue())/100)
+        square = self.squareWave(freq, x, int(self.valueSquare.getValue())/100)
+
+        signal = np.sum((sine, triangle), axis=0)
+        signal = np.sum((signal, saw), axis=0)
+        signal = np.sum((signal, square), axis=0)
+
+        return signal
+
+
     def style(self, type, x, freq):
-        y = self.signal(self.waveform[self.selectedWaveform], freq, x)
+        #y = self.signal(self.waveform[self.selectedWaveform], freq, x)
+        y = self.oscillator(freq, x)
         waves = int(type)
         for i in range(waves):
-            y = np.add(y, self.signal(self.waveform[self.selectedWaveform], int(freq) * (waves - i), x))
+            y = np.add(y, self.oscillator(int(freq) * (waves - i), x))
+            #y = np.add(y, self.signal(self.waveform[self.selectedWaveform], int(freq) * (waves - i), x))
         return y
 
     def addEnvelope(self, chunk, chunkPos):
 
         if chunkPos < self.envGen.attackRange:
+
             return self.envGen.attack(chunk, chunkPos)
         else:
             return chunk
@@ -120,7 +174,9 @@ class Synth:
         frames = np.zeros(0)
 
         while self.running:
-            M = int(self.reverb)
+            #self.envGen.setAttack(self.valueAttack.getValue())
+
+            M = int(self.convert2Value(self.valueReverb.getValue(), self.writeable))
             currentFreq = self.frequency
             self.x = np.arange(start, end) / self.rate
             self.y = self.style(self.selectedStyle, self.x, currentFreq)
