@@ -25,7 +25,7 @@ class Synth:
         self.y = np.zeros(chunk)
         self.gain = gain
         self.quadratic = 0
-        self.frequency = 0
+        self.frequency = 144
         self.fadeSeq = fadeSeq
         self.coefficients = np.linspace(0, 1, fadeSeq)
         self.coefficientsR = self.coefficients[::-1]
@@ -64,6 +64,7 @@ class Synth:
         self.valueStyle = ValueCarrier()
         self.valueFrequency = ValueCarrier()
 
+        self.toggle()
 
     def setWaveform(self, val):
         self.selectedWaveform = val
@@ -178,7 +179,8 @@ class Synth:
             #self.envGen.setAttack(self.valueAttack.getValue())
 
             M = int(self.convert2Value(self.valueReverb.getValue(), self.writeable))
-            currentFreq = self.frequency
+            #currentFreq = self.frequency
+            currentFreq = self.valueFrequency.getValue()
             self.x = np.arange(start, end) / self.rate
             self.y = self.style(self.selectedStyle, self.x, currentFreq)
             self.y = self.cleanSignal(self.y, self.pufferY)
