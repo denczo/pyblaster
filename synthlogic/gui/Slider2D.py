@@ -20,6 +20,7 @@ class Slider2D(Tk):
         self.canvas.grid()
         self.x = 0
         self.y = 0
+        self.hideCursor(None)
 
     def mouseCoords(self, event):
         width = self.canvas.winfo_width()

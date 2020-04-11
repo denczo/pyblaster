@@ -10,10 +10,10 @@ class Section(Tk):
         self.row = 0
         self.column = 0
 
-    def setPosition(self, row, column, rowspan, padx, pady):
-        self.border.grid(row=row, column=column, rowspan=rowspan, padx=padx, pady=pady, sticky=N+E+W)
+    def setPosition(self, row, column, rowspan, columnspan, padx, pady):
+        self.border.grid(row=row, column=column, rowspan=rowspan, columnspan=columnspan, padx=padx, pady=pady, sticky=N+W)
         self.innerBox = Frame(self.border)
-        self.innerBox.grid(sticky=E+W)
+        self.innerBox.grid()
         self.section = self.innerBox
 
     def getSection(self):
