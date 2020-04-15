@@ -1,4 +1,6 @@
 from tkinter import *
+from tkinter import messagebox
+
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from synthlogic.algorithms.Synth import Synth
@@ -13,7 +15,7 @@ from synthlogic.gui.SliderGroup import SliderGroup
 master = Tk()
 master.title("EARDRUM BLASTER")
 master.resizable(width=False, height=False)
-winWidth = 430
+winWidth = 558
 winHeight = 650
 windowSize = str(winHeight)+'x'+str(winHeight)
 master.geometry(windowSize)
@@ -37,7 +39,7 @@ def updatePlot():
     axis.spines['bottom'].set_visible(False)
     axis.spines['left'].set_visible(False)
 
-    axis.plot(synth.x, synth.y)
+    axis.plot(synth.x[:1024], synth.y[:1024])
     fig.subplots_adjust(left=0.05, right=0.95, bottom=0.1, top=0.9)
 
     canvas.draw()
@@ -48,6 +50,18 @@ def updatePlot():
 def updateBtnText():
     #playBtn.configure(text=synth.status)
     pass
+
+def on_close():
+    # custom close options, here's one example:
+
+    close = messagebox.askokcancel("Close", "Would you like to close the EARDRUM BLASTER?")
+    if close:
+        synth.running = False
+        master.destroy()
+
+master.protocol("WM_DELETE_WINDOW", on_close)
+
+
 
 WIDTH_IMG = 50
 WIDTH_RB = WIDTH_IMG
@@ -67,9 +81,8 @@ PAD_Y = 10
 PAD_X_W = 5
 PAD_Y_W = 5
 
-background_image = ImageTk.PhotoImage(file='../scratch.jpg')
-#background_image = PhotoImage(file='../background#2.gif')
-touchpad_bg = PhotoImage(file='../touchpad.gif')
+background_image = ImageTk.PhotoImage(file='../icons/background/scratch.jpg')
+touchpad_bg = PhotoImage(file='../icons/touchpad/touchpad.gif')
 
 #Photo by mohammad alizade on Unsplash
 #Photo by Paweł Czerwiński on Unsplash
@@ -78,8 +91,6 @@ background_label.image = background_image
 background_label.place(x=0, y=0, relwidth=1, relheight=1)
 master.configure(background='#CFB53B')
 
-#LABELFRAME_BG = '#053E7E'
-#LABELFRAME_BG = '#A60000'
 LABELFRAME_BG = '#444'
 LABELFRAME_FG = 'white'
 
@@ -87,10 +98,10 @@ LABELFRAME_FG = 'white'
 group = StringVar()
 group.set(1)
 
-sineIcon = PhotoImage(file="../icons_new/Sine.png")
-triangleIcon = PhotoImage(file="../icons_new/Triangle.png")
-sawtoothIcon = PhotoImage(file="../icons_new/Sawtooth.png")
-squareIcon = PhotoImage(file="../icons_new/Square.png")
+sineIcon = PhotoImage(file="../icons/waveforms/Sine.png")
+triangleIcon = PhotoImage(file="../icons/waveforms/Triangle.png")
+sawtoothIcon = PhotoImage(file="../icons/waveforms/Sawtooth.png")
+squareIcon = PhotoImage(file="../icons/waveforms/Square.png")
 
 # === oscillator section
 sectionOsc = Section(master, "OSCILLATOR", LABELFRAME_FG, LABELFRAME_BG)
@@ -100,10 +111,10 @@ oscillator.createIcons([sineIcon, triangleIcon, sawtoothIcon, squareIcon])
 oscillator.createSlider([synth.valueSine, synth.valueTriangle, synth.valueSawtooth, synth.valueSquare])
 
 # === style options
-monoIcon = PhotoImage(file="../icons/mono.png")
-duoIcon = PhotoImage(file="../icons/duo.png")
-trioIcon = PhotoImage(file="../icons/trio.png")
-quattroIcon = PhotoImage(file="../icons/quattro.png")
+monoIcon = PhotoImage(file="../icons/style/mono.png")
+duoIcon = PhotoImage(file="../icons/style/duo.png")
+trioIcon = PhotoImage(file="../icons/style/trio.png")
+quattroIcon = PhotoImage(file="../icons/style/quattro.png")
 
 sectionStyle = Section(master, "STYLE", LABELFRAME_FG, LABELFRAME_BG)
 sectionStyle.setPosition(THIRD, FIRST, 1, 1, PAD_X, (0, PAD_Y))
@@ -136,8 +147,8 @@ slider2D = Slider2D(sectionTouchpad.getSection(), 260, 195, synth)
 sectionEnv = Section(master, "ENVELOPE", LABELFRAME_FG, LABELFRAME_BG)
 sectionEnv.setPosition(FIRST, SECOND, 1, 1, (0, PAD_X), PAD_Y)
 effects = SliderGroup(sectionEnv.getSection())
-effects.createSlider([synth.valueAttack])
-effects.createLabels(["Attack"])
+effects.createSlider([synth.valueAttack, synth.valueDecay, synth.valueSustain, synth.valueRelease])
+effects.createLabels(["Attack", "Decay", "Sustain", "Release"])
 
 # === filter section
 sectionFilter = Section(master, "FILTER", LABELFRAME_FG, LABELFRAME_BG)

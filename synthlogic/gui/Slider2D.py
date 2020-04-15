@@ -9,9 +9,9 @@ class Slider2D(Tk):
         self.height = height
         self.width = width
         self.canvas = Canvas(parent, width=width, height=height, highlightthickness=0, relief='ridge')
-        self.background = ImageTk.PhotoImage(Image.open('touchpad_new.gif').resize((width, height), Image.ANTIALIAS))
+        self.background = ImageTk.PhotoImage(Image.open('../icons/touchpad/touchpad_new.gif').resize((width, height), Image.ANTIALIAS))
         self.canvas.create_image(0, 0, image=self.background, anchor=NW)
-        self.cursor = ImageTk.PhotoImage(Image.open('cursor.png'))
+        self.cursor = ImageTk.PhotoImage(Image.open('../icons/touchpad/cursor.png'))
         self.imageId = self.canvas.create_image(10, 10, image=self.cursor)
         self.canvas.itemconfig(self.imageId, image=self.cursor)
         self.canvas.bind('<B1-Motion>', self.mouseCoords)
@@ -21,12 +21,14 @@ class Slider2D(Tk):
         self.x = 0
         self.y = 0
         self.hideCursor(None)
+        self.pressed = False
 
     def mouseCoords(self, event):
         width = self.canvas.winfo_width()
         height = self.canvas.winfo_height()
         pointxy = (event.x, event.y)
         if width > event.x > 0 and height > event.y > 0:
+            self.synth.valueStatus.setValue(True)
             self.x = event.x
             self.y = event.y
             #print(pointxy)
@@ -35,6 +37,7 @@ class Slider2D(Tk):
             self.setValues()
 
     def hideCursor(self, event):
+        self.synth.valueStatus.setValue(False)
         self.canvas.itemconfigure(self.imageId, state=HIDDEN)
 
     def convert2Value(self, currentGiven, maxGiven, maxActual):
@@ -44,6 +47,6 @@ class Slider2D(Tk):
 
     def setValues(self):
         xValue = self.convert2Value(self.x, self.width, 1000)
-        #print(xValue)
+        yValue = self.convert2Value(self.y, self.height, 100)
         self.synth.valueFrequency.setValue(xValue)
-        #print(self.synth.valueFrequency.getValue())
+        self.synth.valueCutoff.setValue(yValue)

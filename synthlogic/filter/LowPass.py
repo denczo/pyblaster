@@ -12,7 +12,7 @@ class LowPass:
 
     def sincShifted(self, fc, M):
         h = np.zeros(M)
-        if M % 2:
+        if M % 2 == 0:
             mid = M/2
             for i in range(M):
                 if i - mid == 0:
@@ -27,9 +27,17 @@ class LowPass:
 
     def filterKernel(self, fc, M):
         kernel = self.sincShifted(fc, M)
-        kernel *= self.blackmanWindow(M)
+        kernel = kernel * self.blackmanWindow
+        sum = np.sum(kernel)
+        kernel /= sum
         return kernel
 
     def apply(self, chunk, fc):
-        kernel = self.filterKernel(fc, self.M)
-        return np.convolve(chunk, kernel, 'same')
+
+        if fc > 0:
+            fc = 0.5/fc
+            kernel = self.filterKernel(fc, self.M)
+            result = np.convolve(chunk, kernel, 'same')
+            return result
+        else:
+            return chunk

@@ -1,4 +1,4 @@
-from synthlogic.Filter.CircularBuffer import CircularBuffer
+from synthlogic.structures.CircularBuffer import CircularBuffer
 
 
 class Allpass:
@@ -20,3 +20,6 @@ class Allpass:
             return y
         else:
             return x
+
+    def smoothTransition(self):
+        pass
