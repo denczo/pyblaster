@@ -1,11 +1,14 @@
 from tkinter import *
 from PIL import Image, ImageTk
 
+from synthlogic.gui.TupleList import TupleList
 
-class Slider2D(Tk):
+
+class Touchpad(Tk):
     def __init__(self, parent, width, height, synth):
         self.parent = parent
         self.synth = synth
+        self.tupelList = None
         self.height = height
         self.width = width
         self.canvas = Canvas(parent, width=width, height=height, highlightthickness=0, relief='ridge')
@@ -23,18 +26,37 @@ class Slider2D(Tk):
         self.hideCursor(None)
         self.pressed = False
 
+        self.selectedOption = Label(parent)
+        self.options = []
+
+
     def mouseCoords(self, event):
         width = self.canvas.winfo_width()
         height = self.canvas.winfo_height()
-        pointxy = (event.x, event.y)
-        if width > event.x > 0 and height > event.y > 0:
-            self.synth.valueStatus.setValue(True)
+        self.synth.valueStatus.setValue(True)
+
+        self.x = 0
+        self.y = 0
+
+        if width >= event.x >= 0:
             self.x = event.x
+
+        if height >= event.y >= 0:
             self.y = event.y
-            #print(pointxy)
-            self.canvas.itemconfigure(self.imageId, state=NORMAL)
-            self.canvas.coords(self.imageId, pointxy)
-            self.setValues()
+
+        if event.y > height > 0:
+            self.y = self.height
+
+        if event.x > width > 0:
+            self.x = self.width
+
+        pointxy = (self.x, self.y)
+        self.canvas.itemconfigure(self.imageId, state=NORMAL)
+        self.canvas.coords(self.imageId, pointxy)
+        self.setValues()
+
+    def updateOptions(self, tupleList):
+        self.tupelList = tupleList
 
     def hideCursor(self, event):
         self.synth.valueStatus.setValue(False)
@@ -46,7 +68,12 @@ class Slider2D(Tk):
         return result
 
     def setValues(self):
-        xValue = self.convert2Value(self.x, self.width, 1000)
+        xValue = self.convert2Value(self.x, self.width, 500)
         yValue = self.convert2Value(self.y, self.height, 100)
-        self.synth.valueFrequency.setValue(xValue)
-        self.synth.valueCutoff.setValue(yValue)
+        if self.tupelList is not None:
+            # TODO FIX
+            params = self.tupelList.combinations[0]
+            params[0].valueCarrier.setValue(xValue)
+            params[1].valueCarrier.setValue(yValue)
+        #self.synth.valueFrequency.setValue(xValue)
+        #self.synth.valueCutoff.setValue(yValue)

@@ -1,24 +1,27 @@
 from tkinter import *
 from tkinter import messagebox
 
+import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from synthlogic.algorithms.Synth import Synth
 import threading
 from PIL import Image, ImageTk
 
+
 from synthlogic.gui.Section import Section
-from synthlogic.gui.Slider2D import Slider2D
+from synthlogic.gui.Touchpad import Touchpad
 from synthlogic.gui.SliderGroup import SliderGroup
 
 # === basic window configuration
+from synthlogic.gui.TupleList import TupleList
+
 master = Tk()
 master.title("EARDRUM BLASTER")
 master.resizable(width=False, height=False)
 winWidth = 558
 winHeight = 650
 windowSize = str(winHeight)+'x'+str(winHeight)
-master.geometry(windowSize)
 # window spawn in center of screen
 screenWidth = master.winfo_screenwidth()
 screenHeight = master.winfo_screenheight()
@@ -27,7 +30,7 @@ startY = int((screenHeight/2) - (winHeight/2))
 master.geometry('{}x{}+{}+{}'.format(winWidth, winHeight, startX, startY))
 # synthesizer
 synth = Synth()
-
+x = np.arange(0, 1024)
 
 def updatePlot():
     global axis, canvas
@@ -38,18 +41,13 @@ def updatePlot():
     axis.spines['right'].set_visible(False)
     axis.spines['bottom'].set_visible(False)
     axis.spines['left'].set_visible(False)
-
-    axis.plot(synth.x[:1024], synth.y[:1024])
+    bla = synth.queue.get()
+    axis.plot(x, bla[:1024])
     fig.subplots_adjust(left=0.05, right=0.95, bottom=0.1, top=0.9)
 
     canvas.draw()
     # every 10ms; raise, to improve performance
-    master.after(1000, updatePlot)
-
-
-def updateBtnText():
-    #playBtn.configure(text=synth.status)
-    pass
+    master.after(50, updatePlot)
 
 def on_close():
     # custom close options, here's one example:
@@ -107,8 +105,8 @@ squareIcon = PhotoImage(file="../icons/waveforms/Square.png")
 sectionOsc = Section(master, "OSCILLATOR", LABELFRAME_FG, LABELFRAME_BG)
 sectionOsc.setPosition(FIRST, FIRST, 2, 1, PAD_X, PAD_Y)
 oscillator = SliderGroup(sectionOsc.getSection())
-oscillator.createIcons([sineIcon, triangleIcon, sawtoothIcon, squareIcon])
-oscillator.createSlider([synth.valueSine, synth.valueTriangle, synth.valueSawtooth, synth.valueSquare])
+oscillator.create([sineIcon, triangleIcon, sawtoothIcon, squareIcon],
+                  [synth.valueSine, synth.valueTriangle, synth.valueSawtooth, synth.valueSquare])
 
 # === style options
 monoIcon = PhotoImage(file="../icons/style/mono.png")
@@ -123,11 +121,6 @@ Radiobutton(sectionStyle.getSection(), variable=group, image=duoIcon, value=2, i
 Radiobutton(sectionStyle.getSection(), variable=group, image=trioIcon, value=3, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(3)]).grid(row=FIRST,column=THIRD, padx=(5,0), pady=PAD_Y_W)
 Radiobutton(sectionStyle.getSection(), variable=group, image=quattroIcon, value=4, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(4)]).grid(row=FIRST,column=FOURTH, padx=(5,7), pady=PAD_Y_W)
 
-# === frequency
-#w = Scale(frameFreq, from_=0, to=1000, length=200, orient=HORIZONTAL, resolution=1, command=lambda x: [synth.setFrequency(x)]).grid(row=SECOND, column=FIRST, columnspan=3, sticky=E+W)
-#playBtn = Button(frameFreq, text=synth.status, command=lambda: [synth.toggle(), updateBtnText()])
-#playBtn.grid(row=THIRD, column=FIRST, columnspan=3, sticky=E+W, padx=PAD_X_W, pady=PAD_Y_W)
-
 # === chunk section
 sectionChunk = Section(master, "CHUNK", LABELFRAME_FG, LABELFRAME_BG)
 sectionChunk.setPosition(FOURTH, FIRST, 1, 1, PAD_X, (0, PAD_Y))
@@ -141,20 +134,49 @@ t.start()
 # === touchpad section
 sectionTouchpad = Section(master, "TOUCH ME", LABELFRAME_FG, LABELFRAME_BG)
 sectionTouchpad.setPosition(FIFTH, FIRST, 2, 1, PAD_X, (0, PAD_Y))
-slider2D = Slider2D(sectionTouchpad.getSection(), 260, 195, synth)
+touchpad = Touchpad(sectionTouchpad.getSection(), 260, 195, synth)
 
 # === envelope section
 sectionEnv = Section(master, "ENVELOPE", LABELFRAME_FG, LABELFRAME_BG)
 sectionEnv.setPosition(FIRST, SECOND, 1, 1, (0, PAD_X), PAD_Y)
 effects = SliderGroup(sectionEnv.getSection())
-effects.createSlider([synth.valueAttack, synth.valueDecay, synth.valueSustain, synth.valueRelease])
-effects.createLabels(["Attack", "Decay", "Sustain", "Release"])
+effects.create(["Attack", "Decay", "Sustain", "Release"],
+               [synth.valueAttack, synth.valueDecay, synth.valueSustain, synth.valueRelease])
 
 # === filter section
 sectionFilter = Section(master, "FILTER", LABELFRAME_FG, LABELFRAME_BG)
 sectionFilter.setPosition(THIRD, SECOND, 2, 2, (0, PAD_X), 0)
 effects = SliderGroup(sectionFilter.getSection())
-effects.createSlider([synth.valueReverb, synth.valueCutoff])
-effects.createLabels(["Reverb", "Cutoff"])
+effects.create(["Reverb", "Cutoff"], [synth.valueReverb, synth.valueCutoff])
+
+# === lfo options
+
+tri = Image.open("../icons/waveforms/Triangle.png")
+tri = tri.resize((20, 20), Image.ANTIALIAS)
+triR = ImageTk.PhotoImage(tri)
+saw = Image.open("../icons/waveforms/Sawtooth.png")
+saw = saw.resize((20, 20), Image.ANTIALIAS)
+sawR = ImageTk.PhotoImage(saw)
+sqare = Image.open("../icons/waveforms/Square.png")
+sqare = sqare.resize((20, 20), Image.ANTIALIAS)
+sqareR = ImageTk.PhotoImage(sqare)
+
+WIDTH_IMG = 20
+HEIGHT_RB = 20
+
+sectionLFO = Section(master, "LFO", LABELFRAME_FG, LABELFRAME_BG)
+sectionLFO.setPosition(FIFTH, SECOND, 1, 1, (0, PAD_X), (0, PAD_Y))
+Radiobutton(sectionLFO.getSection(), variable=group, image=triR, value=1, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(1)]).grid(row=FIRST, column=THIRD, padx=5, pady=(0, 60))
+Radiobutton(sectionLFO.getSection(), variable=group, image=sawR, value=2, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(2)]).grid(row=FIRST, column=THIRD, padx=5, pady=10)
+Radiobutton(sectionLFO.getSection(), variable=group, image=sqareR, value=3, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(3)]).grid(row=FIRST, column=THIRD, padx=5, pady=(60, 0))
+lfoSlider = SliderGroup(sectionLFO.getSection())
+lfoSlider.create(["Amount", "Rate"], [synth.valueLfoAmount, synth.valueLfoRate])
+
+
+tupleList = TupleList(touchpad.parent)
+tupleList.addOptions(lfoSlider.sliders[0], effects.sliders[1])
+tupleList.addOptions(lfoSlider.sliders[0], lfoSlider.sliders[1])
+#tupleList.addOptions(lfoSlider.sliders[0], effects.sliders[1])
+touchpad.updateOptions(tupleList)
 
 mainloop()

@@ -32,8 +32,23 @@ class LowPass:
         kernel /= sum
         return kernel
 
-    def apply(self, chunk, fc):
+    def applyLfo(self, lfo, chunk):
 
+        #result = np.zeros(len(chunk))
+        # average value
+        fc = abs(np.mean(lfo))
+        fc = int(fc*100)
+        #print(fc)
+        if fc > 0:
+            fc = 0.5/fc
+            kernel = self.filterKernel(fc, self.M)
+            result = np.convolve(chunk, kernel, 'same')
+            return result
+        else:
+            return chunk
+
+    def apply(self, chunk, fc):
+        #print(fc)
         if fc > 0:
             fc = 0.5/fc
             kernel = self.filterKernel(fc, self.M)

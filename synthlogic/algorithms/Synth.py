@@ -1,35 +1,33 @@
 import pyaudio
 import numpy as np
-from scipy import signal
 import threading
+import queue
+
 
 from scipy.io import wavfile
 
-from synthlogic.Envelope.Envelope import Envelope
+from synthlogic.envelope.Envelope import Envelope
 from synthlogic.filter.LowPass import LowPass
-from synthlogic.algorithms.EnvelopeGen import EnvelopeGen
 from synthlogic.filter.Allpass import Allpass
+from synthlogic.oscillator.OscType import OscType
+from synthlogic.oscillator.Oscillator import Oscillator
+from synthlogic.oscillator.Smoother import Smoother
 from synthlogic.structures.ValueCarrier import ValueCarrier
 
 
 class Synth:
-    def __init__(self, rate=44100, chunkSize=1024, gain=0.05, fadeSeq=896):
+    def __init__(self, rate=44100, chunkSize=1024, gain=0.07, fadeSeq=896):
 
-        self.envGen = EnvelopeGen()
         self.BUFFERSIZE = 22016
         self.writeable = self.BUFFERSIZE - chunkSize
         self.waveform = ["sine", "triangle", "sawtooth", "square"]
         self.selectedStyle = 0
-        self.attack = []
         self.x = np.zeros(chunkSize+fadeSeq)
         self.y = np.zeros(chunkSize+fadeSeq)
-        self.buffer = np.zeros(fadeSeq)
         self.chunk = np.zeros(chunkSize)
         self.gain = gain
         self.fadeSeq = fadeSeq
-        self.coefficients = np.linspace(0, 1, fadeSeq)
-        self.coefficientsR = self.coefficients[::-1]
-
+        self.queue = queue.LifoQueue()
         self.rate = int(rate)
         self.chunkSize = chunkSize
         self.p = pyaudio.PyAudio()
@@ -41,10 +39,8 @@ class Synth:
         self.stream.start_stream()
         self.running = False
         self.pressed = False
-        self.status = 'PLAY'
-        # setter; tkinter needs objects to pass commands as parameter
-        self.valueWaveform = ValueCarrier()
 
+        # setter; tkinter needs objects to pass commands as parameter
         # values for waveforms
         self.valueSine = ValueCarrier()
         self.valueSawtooth = ValueCarrier()
@@ -63,6 +59,11 @@ class Synth:
         self.valueSustain = ValueCarrier()
         self.valueRelease = ValueCarrier()
 
+        # values of lfo
+        self.valueLfoRate = ValueCarrier()
+        self.valueLfoAmount = ValueCarrier()
+        self.valueLfoType = ValueCarrier()
+
         self.valueStyle = ValueCarrier()
         self.valueFrequency = ValueCarrier()
         self.valueStatus = ValueCarrier()
@@ -78,80 +79,22 @@ class Synth:
     def toggle(self):
         if self.running:
             print("inactive")
-            self.status = 'PLAY'
             self.running = False
         elif not self.running:
             print("active")
             self.running = True
-            self.status = 'STOP'
-            #self.stream.start_stream()
             t = threading.Thread(target=self.render)
             t.start()
 
     def run(self):
         self.render()
 
-    def sineWave(self, freq, x, gain):
-        if gain > 0 :
-            return gain * np.sin(2 * np.pi * int(freq) * x)
-        else:
-            return np.zeros(len(x))
-
-    def sawtoothWave(self, freq, x, gain):
-        if gain > 0:
-            return gain * signal.sawtooth(2 * np.pi * int(freq) * x, 1)
-        else:
-            return np.zeros(len(x))
-
-    def triangleWave(self, freq, x, gain):
-        if gain > 0:
-            return gain * signal.sawtooth(2 * np.pi * int(freq) * x, 0.5)
-        else:
-            return np.zeros(len(x))
-
-    def squareWave(self, freq, x, gain):
-        if gain > 0:
-            return gain * signal.square(2 * np.pi * int(freq) * x)
-        else:
-            return np.zeros(len(x))
-
-    def oscillator(self, freq, x):
-        sine = self.sineWave(freq, x, int(self.valueSine.getValue())/100)
-        saw = self.sawtoothWave(freq, x, int(self.valueSawtooth.getValue())/100)
-        triangle = self.triangleWave(freq, x, int(self.valueTriangle.getValue())/100)
-        square = self.squareWave(freq, x, int(self.valueSquare.getValue())/100)
-
-        signal = np.sum((sine, triangle), axis=0)
-        signal = np.sum((signal, saw), axis=0)
-        signal = np.sum((signal, square), axis=0)
-
-        return signal
-
-
     def style(self, type, x, freq):
-        #y = self.signal(self.waveform[self.selectedWaveform], freq, x)
         y = self.oscillator(freq, x)
-        waves = int(type)
-        for i in range(waves):
-            y = np.add(y, self.oscillator(int(freq) * (waves - i), x))
-            #y = np.add(y, self.signal(self.waveform[self.selectedWaveform], int(freq) * (waves - i), x))
+        #waves = int(type)
+        #for i in range(waves):
+        #    y = np.add(y, self.oscillator(int(freq) * (waves - i), x))
         return y
-
-    def addEnvelope(self, chunk, chunkPos):
-
-        if chunkPos < self.envGen.attackRange:
-
-            return self.envGen.attack(chunk, chunkPos)
-        else:
-            return chunk
-
-    def cleanSignal(self, signal, puffer):
-        puffer = [a * b for a, b in zip(self.coefficientsR, puffer)]
-        signal[:self.fadeSeq] = [a * b for a, b in zip(self.coefficients, signal[:self.fadeSeq])]
-        signal[:self.fadeSeq] += puffer
-
-        # signal[-self.fadeSeq:] = [a*b for a, b in zip(self.coefficientsR, signal[-self.fadeSeq:])]
-        return signal
 
     def render(self):
         start = 0
@@ -162,19 +105,17 @@ class Synth:
         allpass = Allpass(self.BUFFERSIZE, self.chunkSize)
         lowpass = LowPass(M_window)
         envelope = Envelope(396288, self.chunkSize)
-        # envelope.setAttack(81920)
-        # envelope.setDecay(2048)
-        # envelope.setSustain(0.5)
-        # envelope.setRelease(51200)
-        # envelope.updateEnvelope()
+        smoother = Smoother(self.fadeSeq)
+        osc = Oscillator()
 
         # debug
         frames = np.zeros(0)
+        lock = threading.Lock()
 
         while self.running:
-
             M_delay = int(self.convert2Value(self.valueReverb.getValue(), self.writeable))
-            currentFreq = self.valueFrequency.getValue()
+            currentFreq = 100
+            #currentFreq = self.valueFrequency.getValue()
             currentLp = self.valueCutoff.getValue()
             envelope.setAttack(self.valueAttack.getValue())
             envelope.setDecay(self.valueDecay.getValue())
@@ -183,15 +124,23 @@ class Synth:
             envelope.updateEnvelope()
 
             self.x = np.arange(start, end + self.fadeSeq) / self.rate
-            self.y = self.style(self.selectedStyle, self.x, currentFreq)
-            self.y = lowpass.apply(self.y, int(currentLp))
-            #self.y *= envelope.getEnvelope()[:self.chunkSize]
-            # all modifications need to be done before cleanSignal
-            self.y = self.cleanSignal(self.y, self.buffer)
+            #self.y = self.style(self.selectedStyle, self.x, (currentFreq+Oscillator.triangle(0.25,5, self.x)))
+
+            tri = osc.render(OscType.TRIANGLE, currentFreq, self.x, int(self.valueTriangle.getValue())/100, typeLfo=OscType.SAWTOOTH, fm=22)
+            saw = osc.render(OscType.SAWTOOTH, currentFreq, self.x, int(self.valueSawtooth.getValue())/100, typeLfo=OscType.SAWTOOTH, fm=22)
+            square = osc.render(OscType.SQUARE, currentFreq, self.x, int(self.valueSquare.getValue())/100, typeLfo=OscType.SAWTOOTH, fm=22)
+            sum = np.sum((tri, saw), axis=0)
+            sum = np.sum((sum, square), axis=0)
+            self.y = sum
+            #self.y = osc.render(OscType.SQUARE, currentFreq, self.x, int(self.valueSquare.getValue())/100)
+            self.y = lowpass.applyLfo(osc.selectWaveform(OscType.TRIANGLE, 20*(2*np.pi*2*self.x)), self.y)
+            #self.y = lowpass.apply(self.y, int(currentLp))
+            self.y = smoother.smoothTransition(self.y)
+            self.queue.put(self.y)
             self.chunk = envelope.apply(self.valueStatus.getValue(), self.y[:self.chunkSize])
             self.chunk = allpass.output(self.chunk, g1, g2, M_delay)
             self.chunk = self.chunk * self.gain
-            self.buffer = self.y[-self.fadeSeq:]
+            smoother.buffer = self.y[-self.fadeSeq:]
 
             # frames = np.append(frames, self.chunk)
             # if len(frames) > self.chunkSize * 500:

@@ -1,36 +1,19 @@
-from tkinter import *
+from synthlogic.gui.Slider import Slider
 
 
-class SliderGroup(Tk):
-    def __init__(self, parent):
+class SliderGroup:
+    def __init__(self, parent, label=""):
+        self.label = label
         self.parent = parent
         self.sliders = []
         self.currentRow = 0
         self.currentColumn = 0
 
-    def createSlider(self, valueCarriers):
-
-        for i in range(len(valueCarriers)):
-            slider = Scale(self.parent, from_=100, to=0, length=100, command=valueCarriers[i].setValue)
-            slider.grid(row=self.currentRow, column=self.currentColumn, padx=(0, 20), pady=5)
-            self.currentColumn += 1
-        self.currentColumn = 0
-        self.currentRow += 1
-
-    def createLabels(self, labels):
-
+    # creates group of sliders with labels or icons, icons 40x40 px only
+    def create(self, labels, valueCarriers):
         for i in range(len(labels)):
-            Label(self.parent, text=labels[i]).grid(row=self.currentRow, column=self.currentColumn)
+            slider = Slider(self.parent, labels[i], valueCarriers[i], self.label)
+            self.sliders.append(slider)
+            slider.pos(self.currentRow, self.currentColumn)
             self.currentColumn += 1
-        self.currentColumn = 0
-        self.currentRow += 1
-
-    # icons of size 40x40 px
-    def createIcons(self, icons):
-
-        for i in range(len(icons)):
-            icon = icons[i]
-            Label(self.parent, image=icon).grid(row=self.currentRow, column=self.currentColumn)
-            self.currentColumn += 1
-        self.currentColumn = 0
         self.currentRow += 1
