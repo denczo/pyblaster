@@ -10,11 +10,12 @@ from PIL import Image, ImageTk
 
 
 from synthlogic.gui.Section import Section
+from synthlogic.gui.button.ButtonGroup import ButtonGroup
 from synthlogic.gui.Touchpad import Touchpad
-from synthlogic.gui.SliderGroup import SliderGroup
+from synthlogic.gui.slider.SliderGroup import SliderGroup
 
 # === basic window configuration
-from synthlogic.gui.TupleList import TupleList
+from synthlogic.gui.slider.EffectPair import EffectPair
 
 master = Tk()
 master.title("EARDRUM BLASTER")
@@ -105,8 +106,8 @@ squareIcon = PhotoImage(file="../icons/waveforms/Square.png")
 sectionOsc = Section(master, "OSCILLATOR", LABELFRAME_FG, LABELFRAME_BG)
 sectionOsc.setPosition(FIRST, FIRST, 2, 1, PAD_X, PAD_Y)
 oscillator = SliderGroup(sectionOsc.getSection())
-oscillator.create([sineIcon, triangleIcon, sawtoothIcon, squareIcon],
-                  [synth.valueSine, synth.valueTriangle, synth.valueSawtooth, synth.valueSquare])
+oscillator.create(["Pitch", triangleIcon, sawtoothIcon, squareIcon],
+                  [synth.valueFrequency, synth.valueTriangle, synth.valueSawtooth, synth.valueSquare])
 
 # === style options
 monoIcon = PhotoImage(file="../icons/style/mono.png")
@@ -166,17 +167,26 @@ HEIGHT_RB = 20
 
 sectionLFO = Section(master, "LFO", LABELFRAME_FG, LABELFRAME_BG)
 sectionLFO.setPosition(FIFTH, SECOND, 1, 1, (0, PAD_X), (0, PAD_Y))
-Radiobutton(sectionLFO.getSection(), variable=group, image=triR, value=1, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(1)]).grid(row=FIRST, column=THIRD, padx=5, pady=(0, 60))
-Radiobutton(sectionLFO.getSection(), variable=group, image=sawR, value=2, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(2)]).grid(row=FIRST, column=THIRD, padx=5, pady=10)
-Radiobutton(sectionLFO.getSection(), variable=group, image=sqareR, value=3, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(3)]).grid(row=FIRST, column=THIRD, padx=5, pady=(60, 0))
+lfoType = ButtonGroup(sectionLFO.getSection(), startColumn=2)
+lfoType.create([triR, sawR, sqareR], width=WIDTH_IMG, height=HEIGHT_RB, variable="type")
+lfoType.posVertical(padx=5, pady=15, gap=30)
+
+lfoStyle = ButtonGroup(sectionLFO.getSection(), startColumn=3)
+lfoStyle.create(["None", "Cutoff", "Volume"], width=10, variable="style")
+lfoStyle.posVertical(padx=5, pady=15, gap=30)
+
+#Radiobutton(sectionLFO.getSection(), variable=group, image=triR, value=1, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(1)]).grid(row=FIRST, column=THIRD, padx=5, pady=(0, 60))
+#Radiobutton(sectionLFO.getSection(), variable=group, image=sawR, value=2, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(2)]).grid(row=FIRST, column=THIRD, padx=5, pady=10)
+#Radiobutton(sectionLFO.getSection(), variable=group, image=sqareR, value=3, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(3)]).grid(row=FIRST, column=THIRD, padx=5, pady=(60, 0))
 lfoSlider = SliderGroup(sectionLFO.getSection())
 lfoSlider.create(["Amount", "Rate"], [synth.valueLfoAmount, synth.valueLfoRate])
 
 
-tupleList = TupleList(touchpad.parent)
+tupleList = EffectPair(touchpad.parent)
+tupleList.addOptions(oscillator.sliders[0], effects.sliders[1])
+tupleList.addOptions(oscillator.sliders[0], lfoSlider.sliders[1])
 tupleList.addOptions(lfoSlider.sliders[0], effects.sliders[1])
 tupleList.addOptions(lfoSlider.sliders[0], lfoSlider.sliders[1])
-#tupleList.addOptions(lfoSlider.sliders[0], effects.sliders[1])
 touchpad.updateOptions(tupleList)
 
 mainloop()

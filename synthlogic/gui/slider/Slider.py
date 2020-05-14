@@ -1,9 +1,9 @@
 from tkinter import Scale, PhotoImage, Label, DISABLED, NORMAL
-
+import numpy as np
 
 class Slider:
     def __init__(self, parent, label, valueCarrier, groupLabel=""):
-        self.instance = Scale(parent, from_=100, to=0, length=100, command=valueCarrier.setValue)
+        self.instance = Scale(parent, from_=2, to=0, resolution=0.02, length=100, command=valueCarrier.setValue)
         self.valueCarrier = valueCarrier
         self.groupLabel = groupLabel
         self._label = None

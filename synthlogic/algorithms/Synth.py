@@ -16,7 +16,7 @@ from synthlogic.structures.ValueCarrier import ValueCarrier
 
 
 class Synth:
-    def __init__(self, rate=44100, chunkSize=1024, gain=0.07, fadeSeq=896):
+    def __init__(self, rate=44100, chunkSize=1024, gain=1, fadeSeq=896):
 
         self.BUFFERSIZE = 22016
         self.writeable = self.BUFFERSIZE - chunkSize
@@ -39,34 +39,37 @@ class Synth:
         self.stream.start_stream()
         self.running = False
         self.pressed = False
+        self.osc = Oscillator()
+        self.lowpass = LowPass(200)
 
         # setter; tkinter needs objects to pass commands as parameter
         # values for waveforms
-        self.valueSine = ValueCarrier()
-        self.valueSawtooth = ValueCarrier()
-        self.valueTriangle = ValueCarrier()
-        self.valueSquare = ValueCarrier()
+        maxFreq = float(5000)
+        maxVal = float(1)
+        self.valueSawtooth = ValueCarrier(maxVal)
+        self.valueTriangle = ValueCarrier(maxVal)
+        self.valueSquare = ValueCarrier(maxVal)
 
         # values for effects
-        self.valueReverb = ValueCarrier()
-        self.valueCutoff = ValueCarrier()
-        self.valueFlanger = ValueCarrier()
-        self.valueDelay = ValueCarrier()
+        self.valueReverb = ValueCarrier(maxVal)
+        self.valueCutoff = ValueCarrier(maxVal)
+        self.valueFlanger = ValueCarrier(maxVal)
+        self.valueDelay = ValueCarrier(maxVal)
 
         # values of envelope
-        self.valueAttack = ValueCarrier()
-        self.valueDecay = ValueCarrier()
-        self.valueSustain = ValueCarrier()
-        self.valueRelease = ValueCarrier()
+        self.valueAttack = ValueCarrier(maxVal)
+        self.valueDecay = ValueCarrier(maxVal)
+        self.valueSustain = ValueCarrier(maxVal)
+        self.valueRelease = ValueCarrier(maxVal)
 
         # values of lfo
-        self.valueLfoRate = ValueCarrier()
-        self.valueLfoAmount = ValueCarrier()
-        self.valueLfoType = ValueCarrier()
+        self.valueLfoRate = ValueCarrier(20)
+        self.valueLfoAmount = ValueCarrier(1)
+        self.valueLfoType = ValueCarrier(3)
 
-        self.valueStyle = ValueCarrier()
-        self.valueFrequency = ValueCarrier()
-        self.valueStatus = ValueCarrier()
+        self.valueStyle = ValueCarrier(4)
+        self.valueFrequency = ValueCarrier(5000)
+        self.valueStatus = ValueCarrier(100)
 
         self.toggle()
 
@@ -96,6 +99,31 @@ class Synth:
         #    y = np.add(y, self.oscillator(int(freq) * (waves - i), x))
         return y
 
+    def renderWaveform(self, x, lfoType):
+
+        #LFO none
+        currentFreq = self.valueFrequency.getValue()
+        fm = self.valueLfoRate.getValue()
+        lfo = self.osc.lfo(lfoType, fm, x)
+        t = self.osc.t(currentFreq, x)
+
+        triangle = self.osc.carrier(OscType.TRIANGLE, t, self.valueTriangle.getValue(), lfo)
+        saw = self.osc.carrier(OscType.SAWTOOTH, t, self.valueSawtooth.getValue(), lfo)
+        square = self.osc.carrier(OscType.SQUARE, t, self.valueTriangle.getValue(), lfo)
+        return np.sum((triangle, saw, square), axis=0)
+
+        #triangle = self.osc.render(OscType.TRIANGLE, currentFreq, self.x, self.valueTriangle.getValue(), typeLfo=lfoType, fm=fm)
+        #saw = self.osc.render(OscType.SAWTOOTH, currentFreq, self.x, self.valueSawtooth.getValue(), typeLfo=lfoType, fm=fm)
+        #square = self.osc.render(OscType.SQUARE, currentFreq, self.x, self.valueSquare.getValue(), typeLfo=lfoType, fm=fm)
+        #sum = np.sum((triangle, saw), axis=0)
+        #sum = np.sum((sum, square), axis=0)
+
+    def renderLfoFilter(self, value):
+        amount = self.valueLfoAmount.getValue()
+        rate = self.valueLfoRate.getValue()
+        lfo = self.osc.selectWaveform(value, amount * 2 * np.pi * rate * self.x)
+        return self.lowpass.applyLfo(lfo, self.y)
+
     def render(self):
         start = 0
         end = self.chunkSize
@@ -106,7 +134,6 @@ class Synth:
         lowpass = LowPass(M_window)
         envelope = Envelope(396288, self.chunkSize)
         smoother = Smoother(self.fadeSeq)
-        osc = Oscillator()
 
         # debug
         frames = np.zeros(0)
@@ -126,14 +153,14 @@ class Synth:
             self.x = np.arange(start, end + self.fadeSeq) / self.rate
             #self.y = self.style(self.selectedStyle, self.x, (currentFreq+Oscillator.triangle(0.25,5, self.x)))
 
-            tri = osc.render(OscType.TRIANGLE, currentFreq, self.x, int(self.valueTriangle.getValue())/100, typeLfo=OscType.SAWTOOTH, fm=22)
-            saw = osc.render(OscType.SAWTOOTH, currentFreq, self.x, int(self.valueSawtooth.getValue())/100, typeLfo=OscType.SAWTOOTH, fm=22)
-            square = osc.render(OscType.SQUARE, currentFreq, self.x, int(self.valueSquare.getValue())/100, typeLfo=OscType.SAWTOOTH, fm=22)
-            sum = np.sum((tri, saw), axis=0)
-            sum = np.sum((sum, square), axis=0)
-            self.y = sum
+            # tri = self.osc.render(OscType.TRIANGLE, currentFreq, self.x, int(self.valueTriangle.getValue())/100, typeLfo=OscType.SAWTOOTH, fm=22)
+            # saw = self.osc.render(OscType.SAWTOOTH, currentFreq, self.x, int(self.valueSawtooth.getValue())/100, typeLfo=OscType.SAWTOOTH, fm=22)
+            # square = self.osc.render(OscType.SQUARE, currentFreq, self.x, int(self.valueSquare.getValue())/100, typeLfo=OscType.SAWTOOTH, fm=22)
+            # sum = np.sum((tri, saw), axis=0)
+            # sum = np.sum((sum, square), axis=0)
+            self.y = self.renderWaveform(self.x, OscType.SQUARE)
             #self.y = osc.render(OscType.SQUARE, currentFreq, self.x, int(self.valueSquare.getValue())/100)
-            self.y = lowpass.applyLfo(osc.selectWaveform(OscType.TRIANGLE, 20*(2*np.pi*2*self.x)), self.y)
+            #self.y = lowpass.applyLfo(self.osc.selectWaveform(OscType.TRIANGLE, int(self.valueLfoAmount.getValue())/100*(2*np.pi*int(self.valueLfoRate.getValue())/100*self.x)), self.y)
             #self.y = lowpass.apply(self.y, int(currentLp))
             self.y = smoother.smoothTransition(self.y)
             self.queue.put(self.y)

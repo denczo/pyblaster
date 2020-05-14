@@ -1,4 +1,4 @@
-from synthlogic.gui.Slider import Slider
+from synthlogic.gui.slider.Slider import Slider
 
 
 class SliderGroup:

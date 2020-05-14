@@ -1,14 +1,12 @@
 from tkinter import *
 from PIL import Image, ImageTk
 
-from synthlogic.gui.TupleList import TupleList
 
-
-class Touchpad(Tk):
+class Touchpad:
     def __init__(self, parent, width, height, synth):
         self.parent = parent
         self.synth = synth
-        self.tupelList = None
+        self.effectPair = None
         self.height = height
         self.width = width
         self.canvas = Canvas(parent, width=width, height=height, highlightthickness=0, relief='ridge')
@@ -55,8 +53,8 @@ class Touchpad(Tk):
         self.canvas.coords(self.imageId, pointxy)
         self.setValues()
 
-    def updateOptions(self, tupleList):
-        self.tupelList = tupleList
+    def updateOptions(self, effectPair):
+        self.effectPair = effectPair
 
     def hideCursor(self, event):
         self.synth.valueStatus.setValue(False)
@@ -68,11 +66,11 @@ class Touchpad(Tk):
         return result
 
     def setValues(self):
-        xValue = self.convert2Value(self.x, self.width, 500)
-        yValue = self.convert2Value(self.y, self.height, 100)
-        if self.tupelList is not None:
+        xValue = self.convert2Value(self.x, self.width, 2)
+        yValue = self.convert2Value(self.y, self.height, 2)
+        if self.effectPair is not None:
             # TODO FIX
-            params = self.tupelList.combinations[0]
+            params = self.effectPair.combinations[0]
             params[0].valueCarrier.setValue(xValue)
             params[1].valueCarrier.setValue(yValue)
         #self.synth.valueFrequency.setValue(xValue)

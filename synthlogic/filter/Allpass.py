@@ -1,6 +1,6 @@
 from synthlogic.structures.CircularBuffer import CircularBuffer
 
-
+# TODO add logic to smooth out discontinuities, when M is changed
 class Allpass:
 
     def __init__(self, size, chunkSize):

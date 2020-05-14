@@ -17,7 +17,7 @@ beta = fdelta/fm
 triangle = signal.sawtooth(2*np.pi*fm*x, 1)
 sawtooth = signal.sawtooth(2*np.pi*fm*x, 0.5)
 square = signal.square(2*np.pi*fm*x_lfo)
-lfo = integrate.cumtrapz(square, x_lfo, initial=0)
+lfo = integrate.cumtrapz(sawtooth, x_lfo, initial=0)
 
 y = signal.square(2*np.pi*fc*x+2*np.pi*beta*lfo)
 #y = np.sin(2*np.pi*fc*x+2*np.pi*beta*lfo)

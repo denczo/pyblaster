@@ -1,6 +1,6 @@
 import numpy as np
 
-
+# TODO CLEAN UP!!!
 class LowPass:
 
     def __init__(self, M):

@@ -25,6 +25,4 @@ class Smoother:
         buffer = [a * b for a, b in zip(self.coefficientsR, self.buffer)]
         signal[:self.fadeSeq] = [a * b for a, b in zip(self.coefficients, signal[:self.fadeSeq])]
         signal[:self.fadeSeq] += buffer
-
-        # signal[-self.fadeSeq:] = [a*b for a, b in zip(self.coefficientsR, signal[-self.fadeSeq:])]
         return signal

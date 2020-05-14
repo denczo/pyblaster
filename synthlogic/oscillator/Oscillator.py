@@ -6,10 +6,29 @@ from synthlogic.oscillator.OscType import OscType
 
 class Oscillator:
 
-    #LFO Modes: None, Volume, Filter
+    def t(self, fc, x):
+        return 2*np.pi*fc*x
 
+    def lfo(self, typeLfo, fm, x, fdelta=5):
+        if fm > 0:
+            beta = fdelta/fm
+            t_lfo = self.t(fm, x)
+            waveform = self.selectWaveform(typeLfo, t_lfo)
+            lfo = integrate.cumtrapz(waveform, x, initial=0)
+            lfo *= beta*2*np.pi
+            return lfo
+        else:
+            return 0
 
-    # Todo improve code
+    def carrier(self, typeCarrier, t, gain, lfo=0):
+        if gain > 1:
+            raise ValueError("Value of gain too high. Maximum should be 1!")
+        elif gain > 0:
+            return gain * self.selectWaveform(typeCarrier, t+lfo)
+        else:
+            return self.selectWaveform(OscType.DEFAULT, t)
+
+    #TODO delete
     def render(self, typeCarrier, fc, x, gain, typeLfo=None, fm=None, am=None, fdelta=1):
 
         if typeLfo is not None and fm is not None:
@@ -35,9 +54,7 @@ class Oscillator:
 
     @staticmethod
     def selectWaveform(type, t):
-        if type == OscType.SINE:
-            return np.sin(t)
-        elif type == OscType.TRIANGLE:
+        if type == OscType.TRIANGLE:
             return signal.sawtooth(t, 0.5)
         elif type == OscType.SAWTOOTH:
             return signal.sawtooth(t, 1)

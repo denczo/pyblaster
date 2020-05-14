@@ -1,8 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-x = np.arange(0, 1024)
+x = np.arange(0, 1024)/44100
 envRange = np.ones(1024)
+y = np.sin(2*np.pi*50*x)
+
 phaseRange = int(len(envRange)/4)
 
 

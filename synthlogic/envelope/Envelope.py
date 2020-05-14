@@ -4,7 +4,7 @@ logging.basicConfig(format='%(levelname)s:%(message)s',level=logging.disable())
 
 from synthlogic.envelope.KeyboardState import KeyboardState
 
-
+# TODO BUGFIXING!!
 class Envelope:
     def __init__(self, maxRange, chunkSize):
         self.maxRange = maxRange
