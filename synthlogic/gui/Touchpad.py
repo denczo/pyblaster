@@ -3,9 +3,8 @@ from PIL import Image, ImageTk
 
 
 class Touchpad:
-    def __init__(self, parent, width, height, synth):
+    def __init__(self, parent, width, height, tp_state):
         self.parent = parent
-        self.synth = synth
         self.effectPair = None
         self.height = height
         self.width = width
@@ -21,17 +20,16 @@ class Touchpad:
         self.canvas.grid()
         self.x = 0
         self.y = 0
+        self.tp_state = tp_state
         self.hideCursor(None)
-        self.pressed = False
 
         self.selectedOption = Label(parent)
         self.options = []
 
-
     def mouseCoords(self, event):
         width = self.canvas.winfo_width()
         height = self.canvas.winfo_height()
-        self.synth.valueStatus.setValue(True)
+        self.tp_state.state = True
 
         self.x = 0
         self.y = 0
@@ -57,7 +55,7 @@ class Touchpad:
         self.effectPair = effectPair
 
     def hideCursor(self, event):
-        self.synth.valueStatus.setValue(False)
+        self.tp_state.state = False
         self.canvas.itemconfigure(self.imageId, state=HIDDEN)
 
     def convert2Value(self, currentGiven, maxGiven, maxActual):
@@ -71,7 +69,8 @@ class Touchpad:
         if self.effectPair is not None:
             # TODO FIX
             params = self.effectPair.combinations[0]
-            params[0].valueCarrier.setValue(xValue)
-            params[1].valueCarrier.setValue(yValue)
+            params[0].valueCarrier.value = xValue
+            params[1].valueCarrier.value = yValue
+
         #self.synth.valueFrequency.setValue(xValue)
         #self.synth.valueCutoff.setValue(yValue)

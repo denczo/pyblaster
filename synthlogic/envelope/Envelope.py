@@ -1,8 +1,8 @@
 import numpy as np
 import logging
-logging.basicConfig(format='%(levelname)s:%(message)s',level=logging.disable())
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.disable())
 
-from synthlogic.envelope.KeyboardState import KeyboardState
+from synthlogic.structures.states.KeyboardState import KeyboardState
 
 # TODO BUGFIXING!!
 class Envelope:
@@ -46,7 +46,7 @@ class Envelope:
         #print(reachedMax)
 
     def convert2Value(self,  percentage, max):
-        return max / 100 * int(percentage)
+        return max / 100 * percentage
 
     def updateEnvelope(self):
         mergedPhases = np.concatenate((self.attack, self.decay))
@@ -66,11 +66,10 @@ class Envelope:
         self.phaseEnd += self.chunkSize
 
     def apply(self, pressed, chunk):
-
         if self.phase == KeyboardState.PRESSED:
 
             sizePhase = len(self.phasePressed)
-
+            #print(self.phaseEnd, sizePhase)
             try:
                 if self.phaseEnd < sizePhase:
                     logging.info("ATTACK/DECAY PHASE")

@@ -4,9 +4,9 @@ from PIL import ImageTk
 
 
 class Button:
-    def __init__(self, parent, value, label, cmd=None,  width=0, height=0, variable=None):
+    def __init__(self, parent, value, label, stateCarrier, width=0, height=0, variable=None):
 
-        self.instance = Radiobutton(parent, value=value, variable=variable, indicatoron=0, width=width, height=height)
+        self.instance = Radiobutton(parent, value=value, variable=variable, indicatoron=0, command=stateCarrier.saveVal, width=width, height=height)
         if isinstance(label, str):
             self.instance.config(text=label)
         elif isinstance(label, ImageTk.PhotoImage):
