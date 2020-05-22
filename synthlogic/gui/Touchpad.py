@@ -1,6 +1,7 @@
 from tkinter import *
 from PIL import Image, ImageTk
-
+import logging
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.disable())
 
 class Touchpad:
     def __init__(self, parent, width, height, tp_state):
@@ -8,7 +9,7 @@ class Touchpad:
         self.effectPair = None
         self.height = height
         self.width = width
-        self.canvas = Canvas(parent, width=width, height=height, highlightthickness=0, relief='ridge')
+        self.canvas = Canvas(parent, width=width, height=height, highlightthickness=0, relief='ridge', bg='#444')
         self.background = ImageTk.PhotoImage(Image.open('../icons/touchpad/touchpad_new.gif').resize((width, height), Image.ANTIALIAS))
         self.canvas.create_image(0, 0, image=self.background, anchor=NW)
         self.cursor = ImageTk.PhotoImage(Image.open('../icons/touchpad/cursor.png'))
@@ -67,8 +68,8 @@ class Touchpad:
         xValue = self.convert2Value(self.x, self.width, 2)
         yValue = self.convert2Value(self.y, self.height, 2)
         if self.effectPair is not None:
-            # TODO FIX
-            params = self.effectPair.combinations[0]
+            params = self.effectPair.valueCarriers()
+            logging.info("MOD ", params[0].label, params[1].label)
             params[0].valueCarrier.value = xValue
             params[1].valueCarrier.value = yValue
 

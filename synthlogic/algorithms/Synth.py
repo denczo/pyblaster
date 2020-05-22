@@ -63,11 +63,13 @@ class Synth:
     def run(self):
         self.renderNEW()
 
-    def harmonics(self, type, amount):
-        #waves = int(type)
-        #for i in range(waves):
-        #    y = np.add(y, self.oscillator(int(freq) * (waves - i), x))
-        return None
+    def harmonics(self, type_wf, g, fc, amount, lfo):
+        t = osc.t(fc, self.x)
+        y = osc.carrier(type_wf, g, t+lfo)
+        for i in range(amount):
+            t = osc.t(fc*(amount - i), self.x)
+            y = np.add(y, osc.carrier(type_wf, g, t+lfo))
+        return y
 
     def sum_waveforms(self, g_triangle, g_saw, g_square):
         triangle = osc.carrier(OscType.TRIANGLE, g_triangle, self.x)
@@ -98,7 +100,7 @@ class Synth:
             self.x = self.create_samples(start, end)
             fc = self.data_interface.wf_frequency.value
             fcLp = self.data_interface.ft_cutoff.value
-            print(fcLp)
+            #print(fcLp)
             self.t = osc.t(fc, self.x)
 
             # lfo
@@ -112,9 +114,13 @@ class Synth:
             g_saw = self.data_interface.wf_sawtooth.value
             g_square = self.data_interface.wf_square.value
             #print(g_triangle, g_saw, g_square)
-            triangle = osc.carrier(OscType.TRIANGLE, g_triangle, self.t+lfo)
-            saw = osc.carrier(OscType.SAWTOOTH, g_saw, self.t+lfo)
-            square = osc.carrier(OscType.SQUARE, g_square, self.t+lfo)
+            #triangle = osc.carrier(OscType.TRIANGLE.value, g_triangle, self.t+lfo)
+            #saw = osc.carrier(OscType.SAWTOOTH.value, g_saw, self.t+lfo)
+            #square = osc.carrier(OscType.SQUARE.value, g_square, self.t+lfo)
+            triangle = self.harmonics(OscType.TRIANGLE.value, g_triangle, fc, self.data_interface.harm_amount, lfo)
+            saw = self.harmonics(OscType.SAWTOOTH.value, g_saw, fc, self.data_interface.harm_amount, lfo)
+            square = self.harmonics(OscType.SQUARE.value, g_square, fc, self.data_interface.harm_amount, lfo)
+
             sum = np.sum((triangle, saw, square), axis=0)
             self.y = sum
             # add low pass

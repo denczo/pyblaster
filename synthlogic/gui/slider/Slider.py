@@ -3,7 +3,7 @@ from tkinter import Scale, PhotoImage, Label, DISABLED, NORMAL
 
 class Slider:
     def __init__(self, parent, label, valueCarrier, groupLabel=""):
-        self.instance = Scale(parent, from_=2, to=0, resolution=0.02, length=100, command=valueCarrier.saveVal)
+        self.instance = Scale(parent, from_=2, to=0, resolution=0.02, length=100, showvalue=1, command=valueCarrier.saveVal)
         self.valueCarrier = valueCarrier
         self.groupLabel = groupLabel
         self._label = None

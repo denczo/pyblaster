@@ -8,22 +8,22 @@ def t(fc, x):
     return 2 * np.pi * fc * x
 
 
-def selectWaveform(type, t, lfo=0):
-    if type == OscType.TRIANGLE:
+def select_waveform(type_wf, t, lfo=0):
+    if type_wf == OscType.TRIANGLE.value:
         return signal.sawtooth(t + lfo, 0.5)
-    elif type == OscType.SAWTOOTH:
+    elif type_wf == OscType.SAWTOOTH.value:
         return signal.sawtooth(t + lfo, 1)
-    elif type == OscType.SQUARE:
+    elif type_wf == OscType.SQUARE.value:
         return signal.square(t + lfo)
     else:
         return np.zeros(len(t))
 
 
-def lfo(typeLfo, fm, x, fdelta=1):
+def lfo(type_lfo, fm, x, fdelta=1):
     if fm > 0:
         beta = fdelta / fm
         t_lfo = t(fm, x)
-        waveform = selectWaveform(typeLfo, t_lfo)
+        waveform = select_waveform(type_lfo, t_lfo)
         lfo = integrate.cumtrapz(waveform, x, initial=0)
         lfo *= beta * 2 * np.pi
         return lfo
@@ -35,9 +35,9 @@ def carrier(type_wf, gain, t):
     if gain > 1:
         raise ValueError("Value of gain too high. Maximum should be 1!")
     elif gain > 0.01:
-        return gain * selectWaveform(type_wf, t)
+        return gain * select_waveform(type_wf, t)
     else:
-        return selectWaveform(OscType.DEFAULT, t)
+        return select_waveform(OscType.DEFAULT, t)
 
 #
 # class Oscillator:

@@ -1,3 +1,5 @@
+from tkinter import StringVar
+
 from synthlogic.gui.button.Button import Button
 
 
@@ -7,11 +9,13 @@ class ButtonGroup:
         self.buttons = []
         self.currentRow = startRow
         self.currentColumn = startColumn
+        self.selection = StringVar()
+        self.selection.set(1)
 
     # creates group of buttons with labels or icons
-    def create(self, labels, stateCarriers, width=0, height=0, variable=None):
+    def create(self, labels, values, stateCarriers, width=0, height=0):
         for i in range(len(labels)):
-            button = Button(self.parent, i, labels[i], stateCarriers[i], width=width, height=height, variable=variable)
+            button = Button(self.parent, values[i], labels[i], stateCarriers[i], width=width, height=height, variable=self.selection)
             self.buttons.append(button)
 
     def posVertical(self, padx=0, pady=0, gap=0):

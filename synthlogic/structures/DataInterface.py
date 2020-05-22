@@ -21,16 +21,18 @@ class DataInterface:
         self.env_decay = ValueCarrier(100)
         self.env_sustain = ValueCarrier(100)
         self.env_release = ValueCarrier(100)
-        self.env_state = StateCarrier(KeyboardState.list)
+        self.env_state = StateCarrier(KeyboardState.values())
 
         self.lfo_rate = ValueCarrier(20)  # 20 hz
         self.lfo_amount = ValueCarrier(100)  # fdelta
-        self.lfo_mode = StateCarrier(LfoMode.list())
+        self.lfo_mode = StateCarrier(LfoMode.values())
 
-        self.lfo_type = StateCarrier(OscType.list())
+        self.lfo_type = StateCarrier(OscType.values())
+        self.lfo_type.state = OscType.TRIANGLE.value
         # self.lfo_triangle = StateCarrier([False, True])
         # self.lfo_sawtooth = StateCarrier()
         # self.lfo_square = StateCarrier()
 
         self.tp_state = StateCarrier([True, False])
 
+        self.harm_amount = 0

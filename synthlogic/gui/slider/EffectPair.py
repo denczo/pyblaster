@@ -10,7 +10,7 @@ class EffectPair:
         self.label = Label(parent, anchor='w', relief=RIDGE, width=20)
         self.leftButton = Button(parent, text="<<", command=lambda: [self.moveLeft(), self.updateLabel()])
         self.rightButton = Button(parent, text=">>", command=lambda: [self.moveRight(), self.updateLabel()])
-        self.pos(0, 0)
+        self.pos(1, 0)
 
     def moveLeft(self):
         self.enableSlider(self.listIndex)
@@ -51,3 +51,4 @@ class EffectPair:
         description = sliderX.groupLabel + " " + sliderX.label + " : " + sliderY.groupLabel + " " + sliderY.label
         self.descriptions.append(description)
         self.combinations.append([sliderX, sliderY])
+        self.updateLabel()

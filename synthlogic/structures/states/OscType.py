@@ -7,4 +7,3 @@ class OscType(ExtendedEnum):
     SAWTOOTH = auto()
     SQUARE = auto()
     DEFAULT = auto()
-
