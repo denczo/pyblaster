@@ -29,9 +29,6 @@ class DataInterface:
 
         self.lfo_type = StateCarrier(OscType.values())
         self.lfo_type.state = OscType.TRIANGLE.value
-        # self.lfo_triangle = StateCarrier([False, True])
-        # self.lfo_sawtooth = StateCarrier()
-        # self.lfo_square = StateCarrier()
 
         self.tp_state = StateCarrier([True, False])
 

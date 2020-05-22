@@ -6,7 +6,6 @@ class ValueCarrier:
 
     @property
     def value(self):
-        #print(self._value*self.max)
         return float(self._value*self.max)
 
     @value.setter

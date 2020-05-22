@@ -114,23 +114,10 @@ oscillator = SliderGroup(sectionOsc.getSection())
 oscillator.create(["Pitch", triangleIcon, sawtoothIcon, squareIcon],
                   [data.wf_frequency, data.wf_triangle, data.wf_sawtooth, data.wf_square])
 
-# === style options
-
-
-
-monoIcon = PhotoImage(file="../icons/style/mono.png")
-duoIcon = PhotoImage(file="../icons/style/duo.png")
-trioIcon = PhotoImage(file="../icons/style/trio.png")
-quattroIcon = PhotoImage(file="../icons/style/quattro.png")
-
+# === harmonics section
 sectionHarmonics = Section(master, "HARMONICS", LABELFRAME_FG, LABELFRAME_BG)
 sectionHarmonics.setPosition(THIRD, FIRST, 1, 1, PAD_X, (0, PAD_Y))
 selector = Selector(sectionHarmonics.getSection(), 3, data)
-
-#Radiobutton(sectionHarmonics.getSection(), variable=group, image=monoIcon, value=1, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(1)]).grid(row=FIRST,column=FIRST, padx=(6,0), pady=(PAD_Y_W, 0))
-#Radiobutton(sectionHarmonics.getSection(), variable=group, image=duoIcon, value=2, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(2)]).grid(row=FIRST,column=SECOND, padx=(5,0), pady=(PAD_Y_W, 0))
-#Radiobutton(sectionHarmonics.getSection(), variable=group, image=trioIcon, value=3, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(3)]).grid(row=FIRST,column=THIRD, padx=(5,0), pady=PAD_Y_W)
-#Radiobutton(sectionHarmonics.getSection(), variable=group, image=quattroIcon, value=4, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(4)]).grid(row=FIRST,column=FOURTH, padx=(5,7), pady=PAD_Y_W)
 
 # === chunk section
 sectionChunk = Section(master, "CHUNK", LABELFRAME_FG, LABELFRAME_BG)
