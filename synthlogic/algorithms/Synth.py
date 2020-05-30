@@ -104,17 +104,20 @@ class Synth:
             self.update_envelope()
             self.x = self.create_samples(start, end)
 
-            pressedTp = self.data_interface.tp_state.state
+            #pressedTp = self.data_interface.tp_state.state
             pressedKb = midi_interface.data.tp_state.state
             pressed = False
             fc = 0
 
-            if not pressedKb:
-                pressed = pressedTp
-                fc = self.data_interface.wf_frequency.value
-            elif not pressedTp:
-                pressed = pressedKb
-                fc = midi_interface.currentFreq
+            pressed = pressedKb
+            fc = midi_interface.currentFreq
+
+            # if not pressedKb:
+            #     pressed = pressedTp
+            #     fc = self.data_interface.wf_frequency.value
+            # elif not pressedTp:
+            #     pressed = pressedKb
+            #     fc = midi_interface.currentFreq
 
             #fc = self.data_interface.wf_frequency.value
             #fc = midi_interface.currentFreq

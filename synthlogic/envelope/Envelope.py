@@ -49,6 +49,7 @@ class Envelope:
     def updateEnvelope(self):
         mergedPhases = np.concatenate((self.attack, self.decay))
         self.phasePressed = self.resizePhase(mergedPhases)
+        #self.phaseReleased = self.resizePhase(self.release)
 
     def resizePhase(self, phase):
         sizePhase = len(phase)
@@ -79,6 +80,7 @@ class Envelope:
                     # print("SUSTAIN PHASE")
                     logging.info("SUSTAIN PHASE")
                     modification = self.sustain
+                    self.updateRelease(self.sustain)
 
                 if not pressed:
                     self.phase = KeyboardState.RELEASED
