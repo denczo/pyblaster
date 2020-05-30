@@ -8,14 +8,14 @@ from synthlogic.structures.states.OscType import OscType
 
 class DataInterface:
     def __init__(self):
-        maxGain = 0.8
+        maxGain = 0.6
         self.wf_frequency = ValueCarrier(2000)  # 2000 hz
         self.wf_sawtooth = ValueCarrier(maxGain)
         self.wf_triangle = ValueCarrier(maxGain)
         self.wf_square = ValueCarrier(maxGain)
 
         self.ft_reverb = ValueCarrier(10000) # m_delay
-        self.ft_cutoff = ValueCarrier(1000) # cuttoff hz
+        self.ft_cutoff = ValueCarrier(1000, 0.1) # cuttoff hz
 
         self.env_attack = ValueCarrier(100)
         self.env_decay = ValueCarrier(100)
@@ -24,8 +24,9 @@ class DataInterface:
         self.env_state = StateCarrier(KeyboardState.values())
 
         self.lfo_rate = ValueCarrier(20)  # 20 hz
-        self.lfo_amount = ValueCarrier(100)  # fdelta
+        self.lfo_amount = ValueCarrier(100, 0.1)  # fdelta
         self.lfo_mode = StateCarrier(LfoMode.values())
+        self.lfo_mode.state = LfoMode.DEFAULT.value
 
         self.lfo_type = StateCarrier(OscType.values())
         self.lfo_type.state = OscType.TRIANGLE.value

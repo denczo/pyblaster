@@ -17,12 +17,15 @@ from synthlogic.gui.slider.SliderGroup import SliderGroup
 
 # === basic window configuration
 from synthlogic.gui.slider.EffectPair import EffectPair
+from synthlogic.oscillator.LfoMode import LfoMode
 from synthlogic.structures.DataInterface import DataInterface
 from synthlogic.structures.states.OscType import OscType
 
 master = Tk()
 master.title("EARDRUM BLASTER")
 master.resizable(width=False, height=False)
+# borderless windows
+#master.overrideredirect(1)
 winWidth = 630
 winHeight = 700
 windowSize = str(winHeight)+'x'+str(winHeight)
@@ -117,7 +120,7 @@ oscillator.create(["Pitch", triangleIcon, sawtoothIcon, squareIcon],
 # === harmonics section
 sectionHarmonics = Section(master, "HARMONICS", LABELFRAME_FG, LABELFRAME_BG)
 sectionHarmonics.setPosition(THIRD, FIRST, 1, 1, PAD_X, (0, PAD_Y))
-selector = Selector(sectionHarmonics.getSection(), 3, data)
+selector = Selector(sectionHarmonics.getSection(), 4, data)
 
 # === chunk section
 sectionChunk = Section(master, "CHUNK", LABELFRAME_FG, LABELFRAME_BG)
@@ -168,6 +171,11 @@ sectionLFO.setPosition(FIFTH, SECOND, 1, 1, (0, PAD_X), (0, PAD_Y))
 lfoType = ButtonGroup(sectionLFO.getSection(), startColumn=2)
 lfoType.create([triR, sawR, sqareR], OscType.values(), [data.lfo_type, data.lfo_type, data.lfo_type], width=WIDTH_IMG, height=HEIGHT_RB)
 lfoType.posVertical(padx=5, pady=15, gap=30)
+
+lfoMode = ButtonGroup(sectionLFO.getSection(), startColumn=3)
+lfoMode.create(["Default", "Filter"], LfoMode.values(), [data.lfo_mode, data.lfo_mode], width=10)
+lfoMode.posVertical(padx=5, pady=15, gap=30)
+
 #lfoStyle = ButtonGroup(sectionLFO.getSection(), startColumn=3)
 
 #lfoStyle.create(["None", "Cutoff", "Volume"], [synth.lfoTriangle, synth.lfoSawtooth, synth.lfoSquare], width=10, variable="style")

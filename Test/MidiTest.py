@@ -121,12 +121,11 @@ class MidiInputHandler(object):
         else:
             self.midiout.open_virtual_port("My virtual output")
 
-
     def __call__(self, event, data=None):
         message, deltatime = event
-        #self._wallclock += deltatime
+        self._wallclock += deltatime
         self.midiout.send_message(message)
-        #print("[%s] @%0.6f %r" % (self.port, self._wallclock, message))
+        print("[%s] @%0.6f %r" % (self.port, self._wallclock, message))
 
 
 # Prompts user for MIDI input port, unless a valid port number or name
@@ -149,7 +148,7 @@ try:
     while True:
         time.sleep(0.01)
 except KeyboardInterrupt:
-    print('')
+    print('asd')
 finally:
     print("Exit.")
     midiin.close_port()

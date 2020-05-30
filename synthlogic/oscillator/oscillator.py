@@ -12,7 +12,7 @@ def select_waveform(type_wf, t, lfo=0):
     if type_wf == OscType.TRIANGLE.value:
         return signal.sawtooth(t + lfo, 0.5)
     elif type_wf == OscType.SAWTOOTH.value:
-        return signal.sawtooth(t + lfo, 1)
+        return signal.sawtooth(t + lfo, 0)
     elif type_wf == OscType.SQUARE.value:
         return signal.square(t + lfo)
     else:

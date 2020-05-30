@@ -1,16 +1,15 @@
+from synthlogic.structures.states.KeyboardState import KeyboardState
 import numpy as np
 import logging
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.disable())
 
-from synthlogic.structures.states.KeyboardState import KeyboardState
 
-# TODO BUGFIXING!!
 class Envelope:
     def __init__(self, maxRange, chunkSize):
         self.maxRange = maxRange
-        self.maxPhase = self.maxRange/3
+        self.maxPhase = self.maxRange / 3
         self.chunkSize = chunkSize
-        self.phasePressed = np.zeros(maxRange*2)
+        self.phasePressed = np.zeros(maxRange * 2)
         self.phaseReleased = np.zeros(maxRange)
         self.phaseStart = 0
         self.phaseEnd = chunkSize
@@ -40,24 +39,22 @@ class Envelope:
         self.release = np.linspace(self.sustain, 0, self.releaseRange)
 
     def updateRelease(self, reachedMax):
-        self.releaseRange = int(self.releaseRange * reachedMax)
-        self.release = np.linspace(reachedMax, 0, self.releaseRange)
+        actualRange = int(self.releaseRange * reachedMax)
+        self.release = np.linspace(reachedMax, 0, actualRange)
         self.phaseReleased = self.resizePhase(self.release)
-        #print(reachedMax)
 
-    def convert2Value(self,  percentage, max):
+    def convert2Value(self, percentage, max):
         return max / 100 * percentage
 
     def updateEnvelope(self):
         mergedPhases = np.concatenate((self.attack, self.decay))
         self.phasePressed = self.resizePhase(mergedPhases)
-        self.phaseReleased = self.resizePhase(self.release)
 
     def resizePhase(self, phase):
         sizePhase = len(phase)
         # always round up to next bigger number
-        countChunks = int(sizePhase/self.chunkSize + (sizePhase % self.chunkSize > 0))
-        resizedPhase = np.zeros(countChunks*self.chunkSize)
+        countChunks = int(sizePhase / self.chunkSize + (sizePhase % self.chunkSize > 0))
+        resizedPhase = np.zeros(countChunks * self.chunkSize)
         resizedPhase[:sizePhase] = phase
         return resizedPhase
 
@@ -69,7 +66,6 @@ class Envelope:
         if self.phase == KeyboardState.PRESSED:
 
             sizePhase = len(self.phasePressed)
-            #print(self.phaseEnd, sizePhase)
             try:
                 if self.phaseEnd < sizePhase:
                     logging.info("ATTACK/DECAY PHASE")
@@ -80,6 +76,7 @@ class Envelope:
                     self.updateSlicePos()
                     modification = slicedPhase
                 else:
+                    # print("SUSTAIN PHASE")
                     logging.info("SUSTAIN PHASE")
                     modification = self.sustain
 
@@ -101,8 +98,6 @@ class Envelope:
 
             try:
                 if self.phaseEnd < sizePhase:
-                    #TODO phaseReleased wrong values, not starting with reachedMax
-                    #print(self.reachedMax, self.sustain)
                     slicedPhase = self.phaseReleased[self.phaseStart:self.phaseEnd]
                     self.updateSlicePos()
                     modification = slicedPhase
@@ -122,6 +117,7 @@ class Envelope:
                 return chunk
 
         else:
+            # print("DEFAULT PHASE")
             logging.info("DEFAULT PHASE")
 
             if pressed:
