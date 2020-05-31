@@ -99,18 +99,25 @@ class Synth:
         g2 = 0.4
         midi_interface = MidiInterface(0, self.data_interface)
         midi_interface.midi_in.set_callback(midi_interface)
+        currentFreq = 0
 
         while self.running:
             self.update_envelope()
             self.x = self.create_samples(start, end)
 
-            #pressedTp = self.data_interface.tp_state.state
+            pressedTp = self.data_interface.tp_state.state
             pressedKb = midi_interface.data.tp_state.state
             pressed = False
-            fc = 0
 
-            pressed = pressedKb
-            fc = midi_interface.currentFreq
+            if pressedKb:
+                pressed = pressedKb
+                currentFreq = midi_interface.currentFreq
+            elif pressedTp:
+                pressed = pressedTp
+                currentFreq = self.data_interface.wf_frequency.value
+
+            fc = currentFreq
+
 
             # if not pressedKb:
             #     pressed = pressedTp
@@ -118,6 +125,7 @@ class Synth:
             # elif not pressedTp:
             #     pressed = pressedKb
             #     fc = midi_interface.currentFreq
+
 
             #fc = self.data_interface.wf_frequency.value
             #fc = midi_interface.currentFreq

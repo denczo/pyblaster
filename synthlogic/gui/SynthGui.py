@@ -26,8 +26,8 @@ master.title("EARDRUM BLASTER")
 master.resizable(width=False, height=False)
 # borderless windows
 #master.overrideredirect(1)
-winWidth = 630
-winHeight = 700
+winWidth = 555
+winHeight = 650
 windowSize = str(winHeight)+'x'+str(winHeight)
 # window spawn in center of screen
 screenWidth = master.winfo_screenwidth()
@@ -88,7 +88,7 @@ PAD_Y = 10
 PAD_X_W = 5
 PAD_Y_W = 5
 
-background_image = ImageTk.PhotoImage(file='../icons/background/scratch.jpg')
+background_image = ImageTk.PhotoImage(file='../icons/background/background#2.gif')
 touchpad_bg = PhotoImage(file='../icons/touchpad/touchpad.gif')
 
 #Photo by mohammad alizade on Unsplash
@@ -168,7 +168,7 @@ HEIGHT_RB = 20
 
 sectionLFO = Section(master, "LFO", LABELFRAME_FG, LABELFRAME_BG)
 sectionLFO.setPosition(FIFTH, SECOND, 1, 1, (0, PAD_X), (0, PAD_Y))
-lfoType = ButtonGroup(sectionLFO.getSection(), startColumn=2)
+lfoType = ButtonGroup(sectionLFO.getSection(),  startColumn=2)
 lfoType.create([triR, sawR, sqareR], OscType.values(), [data.lfo_type, data.lfo_type, data.lfo_type], width=WIDTH_IMG, height=HEIGHT_RB)
 lfoType.posVertical(padx=5, pady=15, gap=30)
 

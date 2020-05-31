@@ -3,7 +3,7 @@ from tkinter import Scale, PhotoImage, Label, DISABLED, NORMAL
 
 class Slider:
     def __init__(self, parent, label, valueCarrier, groupLabel=""):
-        self.instance = Scale(parent, from_=2, to=0, resolution=0.02, length=100, showvalue=1, command=valueCarrier.saveVal)
+        self.instance = Scale(parent, from_=2, to=0, resolution=0.02, length=100, showvalue=0, command=valueCarrier.saveVal)
         self.valueCarrier = valueCarrier
         self.groupLabel = groupLabel
         self._label = None
@@ -20,7 +20,7 @@ class Slider:
 
     # set pos for slider with label/icon
     def pos(self, row, column):
-        self.instance.grid(row=row, column=column, padx=(0, 20), pady=5)
+        self.instance.grid(row=row, column=column, padx=(21, 21), pady=5)
         self._label.grid(row=row+1, column=column)
 
     # activate or deactivate slider
