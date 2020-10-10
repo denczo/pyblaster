@@ -33,4 +33,4 @@ class MidiInterface(object):
             self.lastNote = note
         elif note_state == 128 and note == self.lastNote:
             self.data.tp_state.state = False
-        #print(message, self.data.tp_state.state, self.lastNote, note)
+        print(message, self.data.tp_state.state, self.lastNote, note)

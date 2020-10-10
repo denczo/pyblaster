@@ -1,17 +1,15 @@
+import configparser
+
 import pyaudio
 import numpy as np
 import threading
 import queue
 
-from synthlogic.envelope.Envelope import Envelope
-from synthlogic.filter.LowPass import LowPass
-from synthlogic.filter.Allpass import Allpass
-from synthlogic.midi.MidiInterface import MidiInterface
-from synthlogic.oscillator import oscillator as osc
-from synthlogic.oscillator.LfoMode import LfoMode
-from synthlogic.structures.states.OscType import OscType
-from synthlogic.oscillator.Smoother import Smoother
-from synthlogic.structures.DataInterface import DataInterface
+from synthlogic.interfaces.ext_input.midi import MidiInterface
+from synthlogic.processing.envelope import Envelope
+from synthlogic.processing.filter import LowPass, Allpass
+import synthlogic.processing.oscillator as osc
+from synthlogic.structures.value import DataInterface, OscType, LfoMode
 
 
 class Synth:
@@ -46,7 +44,7 @@ class Synth:
         #g2 = 0.4
         self.allpass = Allpass(self.BUFFERSIZE, self.chunkSize)
         self.envelope = Envelope(396288, self.chunkSize)
-        self.smoother = Smoother(self.fadeSeq)
+        self.smoother = osc.Smoother(self.fadeSeq)
         self.toggle()
 
     def setStyle(self, val):
@@ -188,3 +186,44 @@ class Synth:
 
             start = end
             end += self.chunkSize
+
+
+def run_synth_no_gui():
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+    config.sections()
+    synth = Synth()
+    data = DataInterface()
+    synth.data_interface = data
+    # basic setup
+    synth.data_interface.harm_amount = int(config['HARM']['amount'])
+    synth.data_interface.ft_cutoff.value = config['FILTER']['cutoff']
+    synth.data_interface.ft_reverb.value = config['FILTER']['reverb']
+    synth.data_interface.lfo_rate.value = config['LFO']['amount']
+    synth.data_interface.lfo_amount.value = config['LFO']['rate']
+    synth.data_interface.wf_frequency.value = config['OSC']['pitch']
+    synth.data_interface.wf_triangle.value = config['OSC']['triangle']
+    synth.data_interface.wf_sawtooth.value = config['OSC']['sawtooth']
+    synth.data_interface.wf_square.value = config['OSC']['rectangular']
+    synth.data_interface.env_attack.value = config['ENV']['attack']
+    synth.data_interface.env_decay.value = config['ENV']['decay']
+    synth.data_interface.env_sustain.value = config['ENV']['sustain']
+    synth.data_interface.env_release.value = config['ENV']['release']
+    #synth.toggle()
+
+
+
+#
+# print(config.sections())
+# for section in config.sections():
+#     print(section)
+#     for key in config[section]:
+#         print(config[section][key])
+
+
+
+def run_synth_gui():
+    pass
+
+
+run_synth_no_gui()

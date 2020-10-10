@@ -4,42 +4,38 @@ from tkinter import messagebox
 import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from synthlogic.algorithms.Synth import Synth
+
+from synthlogic.interfaces.gui.button import ButtonGroup
 import threading
 from PIL import Image, ImageTk
 
-
-from synthlogic.gui.Section import Section
-from synthlogic.gui.button.ButtonGroup import ButtonGroup
-from synthlogic.gui.Touchpad import Touchpad
-from synthlogic.gui.slider.Selector import Selector
-from synthlogic.gui.slider.SliderGroup import SliderGroup
-
 # === basic window configuration
-from synthlogic.gui.slider.EffectPair import EffectPair
-from synthlogic.oscillator.LfoMode import LfoMode
-from synthlogic.structures.DataInterface import DataInterface
-from synthlogic.structures.states.OscType import OscType
+from synthlogic.interfaces.gui.section import Section
+from synthlogic.interfaces.gui.slider import EffectPair, SliderGroup, Selector
+from synthlogic.interfaces.gui.touchpad import Touchpad
+from synthlogic.main.run import Synth
+from synthlogic.structures.value import DataInterface, LfoMode, OscType
 
 master = Tk()
 master.title("EARDRUM BLASTER")
 master.resizable(width=False, height=False)
 # borderless windows
-#master.overrideredirect(1)
+# master.overrideredirect(1)
 winWidth = 555
 winHeight = 650
-windowSize = str(winHeight)+'x'+str(winHeight)
+windowSize = str(winHeight) + 'x' + str(winHeight)
 # window spawn in center of screen
 screenWidth = master.winfo_screenwidth()
 screenHeight = master.winfo_screenheight()
-startX = int((screenWidth/2) - (winWidth/2))
-startY = int((screenHeight/2) - (winHeight/2))
+startX = int((screenWidth / 2) - (winWidth / 2))
+startY = int((screenHeight / 2) - (winHeight / 2))
 master.geometry('{}x{}+{}+{}'.format(winWidth, winHeight, startX, startY))
 # synthesizer
 synth = Synth()
 data = DataInterface()
 synth.data_interface = data
 x = np.arange(0, 1024)
+
 
 def updatePlot():
     global axis, canvas
@@ -58,6 +54,7 @@ def updatePlot():
     # every 10ms; raise, to improve performance
     master.after(50, updatePlot)
 
+
 def on_close():
     # custom close options, here's one example:
 
@@ -66,9 +63,8 @@ def on_close():
         synth.running = False
         master.destroy()
 
+
 master.protocol("WM_DELETE_WINDOW", on_close)
-
-
 
 WIDTH_IMG = 50
 WIDTH_RB = WIDTH_IMG
@@ -88,11 +84,11 @@ PAD_Y = 10
 PAD_X_W = 5
 PAD_Y_W = 5
 
-background_image = ImageTk.PhotoImage(file='../icons/background/background#2.gif')
+background_image = ImageTk.PhotoImage(file='../icons/background/scratch.jpg')
 touchpad_bg = PhotoImage(file='../icons/touchpad/touchpad.gif')
 
-#Photo by mohammad alizade on Unsplash
-#Photo by Paweł Czerwiński on Unsplash
+# Photo by mohammad alizade on Unsplash
+# Photo by Paweł Czerwiński on Unsplash
 background_label = Label(image=background_image)
 background_label.image = background_image
 background_label.place(x=0, y=0, relwidth=1, relheight=1)
@@ -128,14 +124,14 @@ sectionChunk.setPosition(FOURTH, FIRST, 1, 1, PAD_X, (0, PAD_Y))
 fig = Figure(figsize=(2.6, 1), facecolor='#F0F0F0')
 axis = fig.add_subplot(111)
 canvas = FigureCanvasTkAgg(fig, master=sectionChunk.getSection())
-canvas._tkcanvas.grid(row=FIRST, column=FIRST, sticky=E+W)
+canvas._tkcanvas.grid(row=FIRST, column=FIRST, sticky=E + W)
 t = threading.Thread(target=updatePlot())
 t.start()
 
 # === touchpad section
 sectionTouchpad = Section(master, "TOUCH ME", LABELFRAME_FG, LABELFRAME_BG)
 sectionTouchpad.setPosition(FIFTH, FIRST, 2, 1, PAD_X, (0, PAD_Y))
-#sectionTouchpad.innerBox.configure(bg='#fff')
+# sectionTouchpad.innerBox.configure(bg='#fff')
 touchpad = Touchpad(sectionTouchpad.getSection(), 260, 195, data.tp_state)
 
 # === envelope section
@@ -168,25 +164,25 @@ HEIGHT_RB = 20
 
 sectionLFO = Section(master, "LFO", LABELFRAME_FG, LABELFRAME_BG)
 sectionLFO.setPosition(FIFTH, SECOND, 1, 1, (0, PAD_X), (0, PAD_Y))
-lfoType = ButtonGroup(sectionLFO.getSection(),  startColumn=2)
-lfoType.create([triR, sawR, sqareR], OscType.values(), [data.lfo_type, data.lfo_type, data.lfo_type], width=WIDTH_IMG, height=HEIGHT_RB)
+lfoType = ButtonGroup(sectionLFO.getSection(), startColumn=2)
+lfoType.create([triR, sawR, sqareR], OscType.values(), [data.lfo_type, data.lfo_type, data.lfo_type], width=WIDTH_IMG,
+               height=HEIGHT_RB)
 lfoType.posVertical(padx=5, pady=15, gap=30)
 
 lfoMode = ButtonGroup(sectionLFO.getSection(), startColumn=3)
 lfoMode.create(["Default", "Filter"], LfoMode.values(), [data.lfo_mode, data.lfo_mode], width=10)
 lfoMode.posVertical(padx=5, pady=15, gap=30)
 
-#lfoStyle = ButtonGroup(sectionLFO.getSection(), startColumn=3)
+# lfoStyle = ButtonGroup(sectionLFO.getSection(), startColumn=3)
 
-#lfoStyle.create(["None", "Cutoff", "Volume"], [synth.lfoTriangle, synth.lfoSawtooth, synth.lfoSquare], width=10, variable="style")
-#lfoStyle.posVertical(padx=5, pady=15, gap=30)
+# lfoStyle.create(["None", "Cutoff", "Volume"], [synth.lfoTriangle, synth.lfoSawtooth, synth.lfoSquare], width=10, variable="style")
+# lfoStyle.posVertical(padx=5, pady=15, gap=30)
 
-#Radiobutton(sectionLFO.getSection(), variable=group, image=triR, value=1, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(1)]).grid(row=FIRST, column=THIRD, padx=5, pady=(0, 60))
-#Radiobutton(sectionLFO.getSection(), variable=group, image=sawR, value=2, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(2)]).grid(row=FIRST, column=THIRD, padx=5, pady=10)
-#Radiobutton(sectionLFO.getSection(), variable=group, image=sqareR, value=3, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(3)]).grid(row=FIRST, column=THIRD, padx=5, pady=(60, 0))
+# Radiobutton(sectionLFO.getSection(), variable=group, image=triR, value=1, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(1)]).grid(row=FIRST, column=THIRD, padx=5, pady=(0, 60))
+# Radiobutton(sectionLFO.getSection(), variable=group, image=sawR, value=2, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(2)]).grid(row=FIRST, column=THIRD, padx=5, pady=10)
+# Radiobutton(sectionLFO.getSection(), variable=group, image=sqareR, value=3, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(3)]).grid(row=FIRST, column=THIRD, padx=5, pady=(60, 0))
 lfoSlider = SliderGroup(sectionLFO.getSection())
 lfoSlider.create(["Amount", "Rate"], [data.lfo_amount, data.lfo_rate])
-
 
 effect_pair = EffectPair(touchpad.parent)
 effect_pair.addOptions(oscillator.sliders[0], effects.sliders[1])

@@ -1,6 +1,8 @@
-from synthlogic.structures.states.KeyboardState import KeyboardState
 import numpy as np
 import logging
+
+from synthlogic.structures.value import KeyboardState
+
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.disable())
 
 
@@ -77,7 +79,6 @@ class Envelope:
                     self.updateSlicePos()
                     modification = slicedPhase
                 else:
-                    # print("SUSTAIN PHASE")
                     logging.info("SUSTAIN PHASE")
                     modification = self.sustain
                     self.updateRelease(self.sustain)
