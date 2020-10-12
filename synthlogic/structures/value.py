@@ -1,5 +1,5 @@
 import configparser
-from enum import Enum, auto
+from enum import Enum
 
 
 class ExtendedEnum(Enum):
@@ -14,21 +14,21 @@ class ExtendedEnum(Enum):
 
 
 class OscType(ExtendedEnum):
-    TRIANGLE = auto()
-    SAWTOOTH = auto()
-    SQUARE = auto()
-    DEFAULT = auto()
+    TRIANGLE = 1
+    SAWTOOTH = 2
+    SQUARE = 3
+    DEFAULT = 4
 
 
 class KeyboardState(ExtendedEnum):
-    DEFAULT = auto()
-    PRESSED = auto()
-    RELEASED = auto()
+    DEFAULT = 1
+    PRESSED = 2
+    RELEASED = 3
 
 
 class LfoMode(ExtendedEnum):
-    DEFAULT = auto()
-    FILTER = auto()
+    DEFAULT = 1
+    FILTER = 2
 
 
 class StateCarrier:
