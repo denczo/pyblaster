@@ -3,7 +3,7 @@ import logging
 
 from synthlogic.structures.value import KeyboardState
 
-logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.disable())
+#logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.disable())
 
 
 class Envelope:
@@ -71,7 +71,7 @@ class Envelope:
             sizePhase = len(self.phasePressed)
             try:
                 if self.phaseEnd < sizePhase:
-                    logging.info("ATTACK/DECAY PHASE")
+                    #logging.info("ATTACK/DECAY PHASE")
                     slicedPhase = self.phasePressed[self.phaseStart:self.phaseEnd]
                     # reached maximum value of attack/decay phase
                     self.reachedMax = slicedPhase[-1]
@@ -79,7 +79,7 @@ class Envelope:
                     self.updateSlicePos()
                     modification = slicedPhase
                 else:
-                    logging.info("SUSTAIN PHASE")
+                    #logging.info("SUSTAIN PHASE")
                     modification = self.sustain
                     self.updateRelease(self.sustain)
 
@@ -96,7 +96,7 @@ class Envelope:
 
         elif self.phase == KeyboardState.RELEASED:
 
-            logging.info("RELEASE PHASE")
+            #logging.info("RELEASE PHASE")
             sizePhase = len(self.phaseReleased)
 
             try:
@@ -121,7 +121,7 @@ class Envelope:
 
         else:
             # print("DEFAULT PHASE")
-            logging.info("DEFAULT PHASE")
+            #logging.info("DEFAULT PHASE")
 
             if pressed:
                 self.phase = KeyboardState.PRESSED
