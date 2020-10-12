@@ -9,11 +9,11 @@ def t(fc, x):
 
 
 def select_waveform(type_wf, t, lfo=0):
-    if type_wf == OscType.TRIANGLE.value:
+    if type_wf == OscType.TRIANGLE:
         return signal.sawtooth(t + lfo, 0.5)
-    elif type_wf == OscType.SAWTOOTH.value:
+    elif type_wf == OscType.SAWTOOTH:
         return signal.sawtooth(t + lfo, 0)
-    elif type_wf == OscType.SQUARE.value:
+    elif type_wf == OscType.SQUARE:
         return signal.square(t + lfo)
     else:
         return np.zeros(len(t))

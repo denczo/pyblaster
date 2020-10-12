@@ -28,6 +28,7 @@ class MidiInputHandler(object):
         else:
             self.midiout.open_virtual_port("My virtual output")
 
+
     def __call__(self, event, data=None):
         message, deltatime = event
         self._wallclock += deltatime
