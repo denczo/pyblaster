@@ -6,13 +6,13 @@ import threading
 import queue
 import sys
 
+sys.path.append("/home/pi/synth")
 from synthlogic.interfaces.ext_input.midi import MidiInterface
 from synthlogic.processing.envelope import Envelope
 from synthlogic.processing.filter import LowPass, Allpass
 import synthlogic.processing.oscillator as osc
 from synthlogic.structures.value import DataInterface, OscType, LfoMode
 
-sys.path.append("/home/pi/synth")
 
 
 class Synth:
