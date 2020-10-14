@@ -125,6 +125,7 @@ class Synth:
 
             # add reverb
             M_delay = int(self.data_interface.ft_reverb.value)
+            print(M_delay)
             self.chunk = self.allpass.output(self.chunk, g1, g2, M_delay)
 
             self.smoother.buffer = self.y[-self.fade_seq:]
