@@ -41,7 +41,7 @@ class Synth:
         #self.lowpass = LowPass(200)
         # g1 = 0.4
         # g2 = 0.4
-        #self.allpass = Allpass(self.BUFFERSIZE, self.chunk_size)
+        self.allpass = Allpass(self.BUFFERSIZE, self.chunk_size)
         #self.envelope = Envelope(396288, self.chunk_size)
         self.smoother = osc.Smoother(self.fade_seq)
         self.toggle()
@@ -104,6 +104,8 @@ class Synth:
         midi_interface = MidiInterface(1, self.data_interface)
         midi_interface.midi_in.set_callback(midi_interface)
         currentFreq = 0
+        g1 = 0.4
+        g2 = 0.4
 
         while self.running:
 
@@ -120,6 +122,10 @@ class Synth:
             self.y = triangle
             self.chunk = self.y[:self.chunk_size] * self.gain
             self.y = self.smoother.smoothTransition(self.y)
+
+            # add reverb
+            M_delay = int(self.data_interface.ft_reverb.value)
+            self.chunk = self.allpass.output(self.chunk, g1, g2, M_delay)
 
             self.smoother.buffer = self.y[-self.fade_seq:]
             self.stream.write(self.chunk.astype(np.float32).tostring())
