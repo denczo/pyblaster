@@ -5,6 +5,8 @@ import numpy as np
 import threading
 import queue
 import sys
+from scipy.io import wavfile
+
 
 sys.path.append("/home/pi/synth")
 from synthlogic.interfaces.ext_input.midi import MidiInterface
@@ -16,7 +18,7 @@ from synthlogic.structures.value import DataInterface, OscType, LfoMode
 
 
 class Synth:
-    def __init__(self, rate=44100, chunk_size=1024, gain=1, fade_seq=896):
+    def __init__(self, rate=44100, chunk_size=1024, gain=0.4, fade_seq=896):
 
         self.rate = int(rate)
         self.chunk_size = chunk_size
@@ -101,11 +103,14 @@ class Synth:
 
         start = 0
         end = self.chunk_size
-        midi_interface = MidiInterface(1, self.data_interface)
+        midi_interface = MidiInterface(0, self.data_interface)
         midi_interface.midi_in.set_callback(midi_interface)
         currentFreq = 0
         g1 = 0.4
         g2 = 0.4
+
+        # debug
+        frames = np.zeros(0)
 
         while self.running:
 
@@ -120,20 +125,24 @@ class Synth:
             self.t = osc.t(fc, self.x)
             triangle = osc.carrier(OscType.SAWTOOTH, 0.99, self.t)
             self.y = triangle
-            self.chunk = self.y[:self.chunk_size] * self.gain
-            self.y = self.smoother.smoothTransition(self.y)
-
-            # add reverb
             M_delay = int(self.data_interface.ft_reverb.value)
-            print(M_delay)
-            self.chunk = self.allpass.output(self.chunk, g1, g2, M_delay)
+            self.y = self.smoother.smoothTransition(self.y)
+            #self.chunk = self.envelope.apply(pressedKb, self.y[:self.chunkSize])
+            self.chunk = self.y[:self.chunk_size]
+            self.chunk = self.allpass.output(self.y[:self.chunk_size], g1, g2, M_delay)
+            self.chunk *= self.gain
 
             self.smoother.buffer = self.y[-self.fade_seq:]
             self.stream.write(self.chunk.astype(np.float32).tostring())
+            #frames = np.append(frames, self.chunk)
+
             start = end
             end += self.chunk_size
+            #if start >= 132000:
+            #    self.toggle()
 
-
+        #print('ended')
+        #wavfile.write('recorded.wav', 44100, frames)
 
             # # lfo
             # # waveform TODO simplify, write a function
