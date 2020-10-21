@@ -1,10 +1,11 @@
 import numpy as np
 import logging
+import time
 
 from synthlogic.structures.value import KeyboardState
 
-#logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.disable())
 
+# logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.disable())
 
 class Envelope:
     def __init__(self, maxRange, chunkSize):
@@ -51,7 +52,7 @@ class Envelope:
     def updateEnvelope(self):
         mergedPhases = np.concatenate((self.attack, self.decay))
         self.phasePressed = self.resizePhase(mergedPhases)
-        #self.phaseReleased = self.resizePhase(self.release)
+        # self.phaseReleased = self.resizePhase(self.release)
 
     def resizePhase(self, phase):
         sizePhase = len(phase)
@@ -71,7 +72,7 @@ class Envelope:
             sizePhase = len(self.phasePressed)
             try:
                 if self.phaseEnd < sizePhase:
-                    #logging.info("ATTACK/DECAY PHASE")
+                    # logging.info("ATTACK/DECAY PHASE")
                     slicedPhase = self.phasePressed[self.phaseStart:self.phaseEnd]
                     # reached maximum value of attack/decay phase
                     self.reachedMax = slicedPhase[-1]
@@ -79,7 +80,7 @@ class Envelope:
                     self.updateSlicePos()
                     modification = slicedPhase
                 else:
-                    #logging.info("SUSTAIN PHASE")
+                    # logging.info("SUSTAIN PHASE")
                     modification = self.sustain
                     self.updateRelease(self.sustain)
 
@@ -96,7 +97,7 @@ class Envelope:
 
         elif self.phase == KeyboardState.RELEASED:
 
-            #logging.info("RELEASE PHASE")
+            # logging.info("RELEASE PHASE")
             sizePhase = len(self.phaseReleased)
 
             try:
@@ -121,7 +122,7 @@ class Envelope:
 
         else:
             # print("DEFAULT PHASE")
-            #logging.info("DEFAULT PHASE")
+            # logging.info("DEFAULT PHASE")
 
             if pressed:
                 self.phase = KeyboardState.PRESSED
@@ -129,3 +130,87 @@ class Envelope:
                 self.updateSlicePos()
 
             return chunk * 0
+
+
+class EnvState:
+
+    def __init__(self):
+        self.currentGain = 0.001
+
+    def next(self, input):
+        return self.map[input]
+
+    def run(self, x, x1, y1, x2, y2):
+        return y1 + (x - x1) * (y2 - y1) / (x2 - x1)
+
+
+attack = 0.2
+decay = 0.1
+sustain = 0.8
+release = 0.4
+
+test = time.time()
+
+
+def calcAmplitude(self, gain1, chunkPos1, gain2, chunkPos2, current):
+    return chunkPos1 + (current - gain1) * (chunkPos2 - chunkPos1) / (gain2 - gain1)
+
+
+class Env:
+
+    def __init__(self):
+        self.attack_phase = 0.5
+        self.decay_phase = 0.25
+        self.sustain_phase = 2
+        self.sustain_level = 0.5
+        self.release_phase = 1
+
+        self.reached_gain = 0
+        self.main_gain = 1
+
+        self.p_start_time = time.time()
+        self.r_start_time = time.time()
+        self.pressed_time = 0
+        self.released_time = 0
+
+    def apply(self, pressed):
+
+        main_gain = 1
+        gain = 0
+        if pressed:
+            self.pressed_time = time.time() - self.p_start_time
+            self.r_start_time = time.time()
+            self.released_time = 0
+
+            # attack
+            if self.pressed_time <= self.attack_phase:
+                gain = self.pressed_time / self.attack_phase
+            # decay
+            elif self.pressed_time <= self.attack_phase + self.decay_phase:
+                gain = main_gain - (self.pressed_time - self.attack_phase) / self.decay_phase * (
+                        main_gain - self.sustain_level)
+            # sustain
+            elif self.pressed_time > self.attack_phase + self.decay_phase:
+                gain = self.sustain_level
+                self.sustain_phase = self.pressed_time - (self.attack_phase + self.decay_phase)
+
+            self.reached_gain = gain
+        else:
+            self.released_time = time.time() - self.r_start_time
+            self.p_start_time = time.time()
+            self.pressed_time = 0
+
+            # release
+            if self.released_time <= self.attack_phase:
+                gain = (self.attack_phase - self.released_time) / self.attack_phase * self.reached_gain
+            elif self.released_time <= self.attack_phase + self.decay_phase:
+                gain = (self.decay_phase - (
+                        self.released_time - self.attack_phase)) / self.decay_phase * self.reached_gain
+            else:
+                gain = (self.release_phase - (
+                            self.released_time - self.sustain_phase - self.attack_phase - self.decay_phase)) / self.release_phase * self.sustain_level
+
+            if gain < 0.001:
+                gain = 0
+
+        return gain

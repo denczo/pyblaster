@@ -3,6 +3,7 @@ from scipy import signal, integrate
 
 from synthlogic.structures.value import OscType
 
+
 # shifted by pi/2, so it starts at 0
 def t(fc, x):
     return 2 * np.pi * fc * x - np.pi/2

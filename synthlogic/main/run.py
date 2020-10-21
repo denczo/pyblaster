@@ -10,11 +10,10 @@ from scipy.io import wavfile
 
 sys.path.append("/home/pi/synth")
 from synthlogic.interfaces.ext_input.midi import MidiInterface
-from synthlogic.processing.envelope import Envelope
+from synthlogic.processing.envelope import Envelope, Env
 from synthlogic.processing.filter import LowPass, Allpass
 import synthlogic.processing.oscillator as osc
 from synthlogic.structures.value import DataInterface, OscType, LfoMode
-
 
 
 class Synth:
@@ -46,6 +45,7 @@ class Synth:
         self.allpass = Allpass(self.BUFFERSIZE, self.chunk_size)
         #self.envelope = Envelope(396288, self.chunk_size)
         self.smoother = osc.Smoother(self.fade_seq)
+        self.env = Env()
         self.toggle()
         #self.penis()
 
@@ -130,6 +130,7 @@ class Synth:
             #self.chunk = self.envelope.apply(pressedKb, self.y[:self.chunkSize])
             self.chunk = self.y[:self.chunk_size]
             self.chunk = self.allpass.output(self.y[:self.chunk_size], g1, g2, M_delay)
+            self.chunk *= self.env.apply(pressedKb)
             self.chunk *= self.gain
 
             self.smoother.buffer = self.y[-self.fade_seq:]
