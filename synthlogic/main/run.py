@@ -7,17 +7,16 @@ import queue
 import sys
 from scipy.io import wavfile
 
-
 sys.path.append("/home/pi/synth")
 from synthlogic.interfaces.ext_input.midi import MidiInterface
-from synthlogic.processing.envelope import Envelope, Env
+from synthlogic.processing.envelope import Env
 from synthlogic.processing.filter import LowPass, Allpass
 import synthlogic.processing.oscillator as osc
-from synthlogic.structures.value import DataInterface, OscType, LfoMode
+from synthlogic.structures.value import DataInterface
 
 
 class Synth:
-    def __init__(self, rate=44100, chunk_size=1024, gain=0.4, fade_seq=896):
+    def __init__(self, rate=44100, chunk_size=1024, gain=0.05, fade_seq=896):
 
         self.rate = int(rate)
         self.chunk_size = chunk_size
@@ -34,20 +33,17 @@ class Synth:
         self.chunk = np.zeros(chunk_size)
         self.gain = gain
         self.fade_seq = fade_seq
-        # self.queue = queue.LifoQueue()
+        self.queue = queue.LifoQueue()
 
         self.data_interface = DataInterface()
         self.running = False
         self.pressed = False
-        #self.lowpass = LowPass(200)
-        # g1 = 0.4
-        # g2 = 0.4
+
+        self.lowpass = LowPass(200)
         self.allpass = Allpass(self.BUFFERSIZE, self.chunk_size)
-        #self.envelope = Envelope(396288, self.chunk_size)
         self.smoother = osc.Smoother(self.fade_seq)
-        self.env = Env()
-        self.toggle()
-        #self.penis()
+        self.env = Env(0, 0.01, 0.5, 0.1, gain)
+        self.lfo = 0
 
     def settings(self, channels, rate, output, chunk_size):
         return self.p.open(format=pyaudio.paFloat32,
@@ -56,7 +52,7 @@ class Synth:
                            output=output,
                            frames_per_buffer=chunk_size)
 
-    def penis(self):
+    def devices(self):
         for i in range(self.p.get_device_count()):
             dev = self.p.get_device_info_by_index(i)
             print((i, dev['name'], dev['maxInputChannels']), dev['defaultSampleRate'])
@@ -70,31 +66,6 @@ class Synth:
             self.running = True
             t = threading.Thread(target=self.render)
             t.start()
-
-    def run(self):
-        self.render()
-
-    def harmonics(self, type_wf, g, fc, amount, lfo):
-        t = osc.t(fc, self.x)
-        y = osc.carrier(type_wf, g, t + lfo)
-        start = 2
-        for i in range(start, amount + start):
-            t = osc.t(fc * i, self.x)
-            y = np.add(y, osc.carrier(type_wf, g, t + lfo))
-        return y
-
-    def sum_waveforms(self, g_triangle, g_saw, g_square):
-        triangle = osc.carrier(OscType.TRIANGLE, g_triangle, self.x)
-        saw = osc.carrier(OscType.SAWTOOTH, g_saw, self.x)
-        square = osc.carrier(OscType.SQUARE, g_square, self.x)
-        return np.sum((triangle, saw, square), axis=0)
-
-    def update_envelope(self):
-        self.envelope.setAttack(self.data_interface.env_attack.value)
-        self.envelope.setDecay(self.data_interface.env_decay.value)
-        self.envelope.setSustain(self.data_interface.env_sustain.value)
-        self.envelope.setRelease(self.data_interface.env_release.value)
-        self.envelope.updateEnvelope()
 
     def create_samples(self, start, end):
         return np.arange(start, end + self.fade_seq) / self.rate
@@ -111,84 +82,62 @@ class Synth:
 
         # debug
         frames = np.zeros(0)
-
         while self.running:
 
-            pressedKb = midi_interface.data.tp_state.state
-            if pressedKb:
-                currentFreq = midi_interface.currentFreq
-            else:
-                currentFreq = 0
+            pressedTp = midi_interface.data.tp_state.state
+            pressedKp = self.data_interface.kb_state.state
+            pressed = False
 
-            self.x = self.create_samples(start, end)
+            if pressedTp:
+                currentFreq = self.data_interface.wf_frequency.value
+                pressed = pressedTp
+            elif pressedKp:
+                currentFreq = midi_interface.currentFreq
+                pressed = pressedKp
+
             fc = currentFreq
-            self.t = osc.t(fc, self.x)
-            triangle = osc.carrier(OscType.SAWTOOTH, 0.99, self.t)
-            self.y = triangle
+            fc_Lp = self.data_interface.ft_cutoff.value
             M_delay = int(self.data_interface.ft_reverb.value)
+            self.x = self.create_samples(start, end)
+            # TODO gain way too much
+            self.env.settings(self.data_interface.env_attack.value,
+                              self.data_interface.env_decay.value,
+                              self.data_interface.env_sustain.value,
+                              self.data_interface.env_release.value,
+                              0.8)
+
+            # lfo
+            lfoType = self.data_interface.lfo_type.state
+            fm = self.data_interface.lfo_rate.value
+            fdelta = self.data_interface.lfo_amount.value
+            self.lfo = osc.lfo(lfoType, fm, self.x, fdelta)
+
+            triangle = osc.carrier(self.data_interface.wf_type.state, fc, self.x)
+            self.y = triangle
+            self.y = osc.harmonics(self.data_interface.wf_type.state, triangle, fc, self.x, self.data_interface.harm_amount, 0)
+            self.y *= self.gain
+            self.y = self.lowpass.apply(self.y, fc_Lp)
+            self.y = self.lowpass.applyLfo(self.lfo, self.y)
+            self.y *= self.env.apply(pressed)
             self.y = self.smoother.smoothTransition(self.y)
-            #self.chunk = self.envelope.apply(pressedKb, self.y[:self.chunkSize])
-            self.chunk = self.y[:self.chunk_size]
             self.chunk = self.allpass.output(self.y[:self.chunk_size], g1, g2, M_delay)
-            self.chunk *= self.env.apply(pressedKb)
-            self.chunk *= self.gain
+
+            # for visualisation
+            self.queue.put(self.chunk)
+
+            # self.chunk *= self.gain
 
             self.smoother.buffer = self.y[-self.fade_seq:]
             self.stream.write(self.chunk.astype(np.float32).tostring())
-            #frames = np.append(frames, self.chunk)
+            # frames = np.append(frames, self.chunk)
 
             start = end
             end += self.chunk_size
-            #if start >= 132000:
+            # if start >= 132000:
             #    self.toggle()
 
-        #print('ended')
-        #wavfile.write('recorded.wav', 44100, frames)
-
-            # # lfo
-            # # waveform TODO simplify, write a function
-            #g_triangle = self.data_interface.wf_triangle.value
-            #g_saw = self.data_interface.wf_sawtooth.value
-            #g_square = self.data_interface.wf_square.value
-            #
-            # # triangle = self.harmonics(OscType.TRIANGLE.value, g_triangle, fc, self.data_interface.harm_amount, lfo_default)
-            # saw = self.harmonics(OscType.SAWTOOTH.value, g_saw, fc, self.data_interface.harm_amount, lfo_default)
-            # # square = self.harmonics(OscType.SQUARE.value, g_square, fc, self.data_interface.harm_amount, lfo_default)
-            #
-            # # sum = np.sum((triangle, saw, square), axis=0)
-            # self.y = saw
-            # # add low pass
-            # # self.y = self.lowpass.apply(self.y, fcLp)
-            # # self.y = self.lowpass.applyLfo(lfo_filter, self.y)
-            #
-            # # smooth transitions between chunks
-            # self.y = self.smoother.smoothTransition(self.y)
-            #
-            # # add envelope
-            # # pressedTp = self.data_interface.tp_state.state
-            # # pressedKb = midi_interface.data.tp_state.state
-            # #
-            # # if not pressedKb:
-            # #     pressed = pressedTp
-            # # elif not pressedTp:
-            # #     pressed = pressedKb
-            #
-            # # print(pressed)
-            # # self.chunk = self.envelope.apply(pressed,  self.y[:self.chunkSize])
-            #
-            # # add reverb
-            # M_delay = int(self.data_interface.ft_reverb.value)
-            # # self.chunk = self.allpass.output(self.chunk, g1, g2, M_delay)
-            # self.chunk = self.y
-            #
-            # # self.chunk = self.chunk * self.gain
-            # # self.queue.put(self.y)
-            # self.smoother.buffer = self.y[-self.fadeSeq:]
-            #
-            # self.stream.write(self.chunk.astype(np.float32).tostring())
-            #
-            # start = end
-            # end += self.chunkSize
+        # print('ended')
+        # wavfile.write('recorded.wav', 44100, frames)
 
 
 def run_synth_no_gui():
@@ -198,6 +147,7 @@ def run_synth_no_gui():
     synth = Synth()
     data = DataInterface()
     synth.data_interface = data
+    synth.toggle()
     # basic setup
     synth.data_interface.harm_amount = int(config['HARM']['amount'])
     synth.data_interface.ft_cutoff.value = config['FILTER']['cutoff']
@@ -205,9 +155,8 @@ def run_synth_no_gui():
     synth.data_interface.lfo_rate.value = config['LFO']['amount']
     synth.data_interface.lfo_amount.value = config['LFO']['rate']
     synth.data_interface.wf_frequency.value = config['OSC']['pitch']
-    synth.data_interface.wf_triangle.value = config['OSC']['triangle']
-    synth.data_interface.wf_sawtooth.value = config['OSC']['sawtooth']
-    synth.data_interface.wf_square.value = config['OSC']['rectangular']
+    synth.data_interface.wf_type.value = config['OSC']['wf']
+
     synth.data_interface.env_attack.value = config['ENV']['attack']
     synth.data_interface.env_decay.value = config['ENV']['decay']
     synth.data_interface.env_sustain.value = config['ENV']['sustain']
@@ -218,4 +167,4 @@ def run_synth_gui():
     pass
 
 
-run_synth_no_gui()
+#run_synth_no_gui()

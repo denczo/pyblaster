@@ -6,15 +6,15 @@ from synthlogic.structures.value import OscType
 
 # shifted by pi/2, so it starts at 0
 def t(fc, x):
-    return 2 * np.pi * fc * x - np.pi/2
+    return 2 * np.pi * fc * x - np.pi / 2
 
 
 def select_waveform(type_wf, t, lfo=0):
-    if type_wf == OscType.TRIANGLE:
+    if type_wf == OscType.TRIANGLE.value:
         return signal.sawtooth(t + lfo, 0.5)
-    elif type_wf == OscType.SAWTOOTH:
+    elif type_wf == OscType.SAWTOOTH.value:
         return signal.sawtooth(t + lfo, 0)
-    elif type_wf == OscType.SQUARE:
+    elif type_wf == OscType.SQUARE.value:
         return signal.square(t + lfo)
     else:
         return np.zeros(len(t))
@@ -25,6 +25,7 @@ def lfo(type_lfo, fm, x, fdelta=1):
         beta = fdelta / fm
         t_lfo = t(fm, x)
         waveform = select_waveform(type_lfo, t_lfo)
+        # calculating the integral of the given waveform
         lfo = integrate.cumtrapz(waveform, x, initial=0)
         lfo *= beta * 2 * np.pi
         return lfo
@@ -32,13 +33,19 @@ def lfo(type_lfo, fm, x, fdelta=1):
         return 0
 
 
-def carrier(type_wf, gain, t):
-    if gain > 1:
-        raise ValueError("Value of gain too high. Maximum should be 1!")
-    elif gain > 0.01:
-        return gain * select_waveform(type_wf, t)
-    else:
-        return select_waveform(OscType.DEFAULT, t)
+def carrier(type_wf, fc, x, lfo=0):
+    t_wf = t(fc, x)
+    return select_waveform(type_wf, t_wf, lfo)
+
+
+def harmonics(type_wf, y, fc, x, amount, lfo=0):
+    if amount > 0:
+        g = 1/amount
+        # harmonics e.g. fc = 20hz; i * fc = 40, 60, 80 ...
+        for i in range(2, amount + 2):
+            fc_harm = fc * i
+            y = np.add(y, g * carrier(type_wf, fc_harm, x, lfo))
+    return y
 
 
 class Smoother:
@@ -66,3 +73,5 @@ class Smoother:
         signal[:self.fadeSeq] = [a * b for a, b in zip(self.coefficients, signal[:self.fadeSeq])]
         signal[:self.fadeSeq] += buffer
         return signal
+
+

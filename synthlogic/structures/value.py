@@ -1,4 +1,3 @@
-import configparser
 from enum import Enum
 
 
@@ -18,12 +17,6 @@ class OscType(ExtendedEnum):
     SAWTOOTH = 2
     SQUARE = 3
     DEFAULT = 4
-
-
-class KeyboardState(ExtendedEnum):
-    DEFAULT = 1
-    PRESSED = 2
-    RELEASED = 3
 
 
 class LfoMode(ExtendedEnum):
@@ -55,7 +48,8 @@ class StateCarrier:
 # tkinter needs objects to pass commands as parameter
 class ValueCarrier:
     # max = stepsize, max/100*currentValue = actual value
-    def __init__(self, max: float, factor=1):
+    def __init__(self, max: float, factor=1, label='default'):
+        self.label = label
         self.max = max / 100
         self._value = 0
         self._factor = factor
@@ -77,13 +71,20 @@ class ValueCarrier:
         self.value = value
 
 
+class ChunkFactory:
+    def __init__(self, rate, fade_seq):
+        self.rate = rate
+        self.fade_seq = fade_seq
+
+    def createChunk(self, x, start, end):
+        pass
+
+
 class DataInterface:
     def __init__(self):
         maxGain = 0.6
-        self.wf_frequency = ValueCarrier(2000)  # 2000 hz
-        self.wf_sawtooth = ValueCarrier(maxGain)
-        self.wf_triangle = ValueCarrier(maxGain)
-        self.wf_square = ValueCarrier(maxGain)
+        self.wf_frequency = ValueCarrier(2000)
+        self.wf_type = StateCarrier(OscType.values())
 
         self.ft_reverb = ValueCarrier(10000)  # m_delay
         self.ft_cutoff = ValueCarrier(1000, 0.1)  # cuttoff hz
@@ -92,7 +93,6 @@ class DataInterface:
         self.env_decay = ValueCarrier(100)
         self.env_sustain = ValueCarrier(100)
         self.env_release = ValueCarrier(100)
-        self.env_state = StateCarrier(KeyboardState.values())
 
         self.lfo_rate = ValueCarrier(20)  # 20 hz
         self.lfo_amount = ValueCarrier(100, 0.1)  # fdelta
@@ -103,5 +103,7 @@ class DataInterface:
         self.lfo_type.state = OscType.TRIANGLE.value
 
         self.tp_state = StateCarrier([True, False])
+        self.kb_state = StateCarrier([True, False])
 
         self.harm_amount = 0
+        self.wf_type.state = OscType.TRIANGLE.value

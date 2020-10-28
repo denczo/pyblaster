@@ -26,7 +26,6 @@ class Allpass:
         pass
 
 
-# TODO CLEAN UP!!!
 class LowPass:
 
     def __init__(self, M):
@@ -60,12 +59,9 @@ class LowPass:
         return kernel
 
     def applyLfo(self, lfo, chunk):
-
-        #result = np.zeros(len(chunk))
         # average value
         fc = abs(np.mean(lfo))
         fc = int(fc*100)
-        #print(fc)
         if fc > 0:
             fc = 0.5/fc
             kernel = self.filterKernel(fc, self.M)
@@ -75,7 +71,6 @@ class LowPass:
             return chunk
 
     def apply(self, chunk, fc):
-        #print(fc)
         if fc > 0:
             fc = 0.5/fc
             kernel = self.filterKernel(fc, self.M)

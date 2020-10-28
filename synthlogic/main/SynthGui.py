@@ -22,7 +22,7 @@ master.resizable(width=False, height=False)
 # borderless windows
 # master.overrideredirect(1)
 winWidth = 555
-winHeight = 650
+winHeight = 570
 windowSize = str(winHeight) + 'x' + str(winHeight)
 # window spawn in center of screen
 screenWidth = master.winfo_screenwidth()
@@ -35,6 +35,7 @@ synth = Synth()
 data = DataInterface()
 synth.data_interface = data
 x = np.arange(0, 1024)
+synth.toggle()
 
 
 def updatePlot():
@@ -52,7 +53,7 @@ def updatePlot():
 
     canvas.draw()
     # every 10ms; raise, to improve performance
-    master.after(50, updatePlot)
+    master.after(10, updatePlot)
 
 
 def on_close():
@@ -107,20 +108,35 @@ sawtoothIcon = PhotoImage(file="../icons/waveforms/Sawtooth.png")
 squareIcon = PhotoImage(file="../icons/waveforms/Square.png")
 
 # === oscillator section
+tri = Image.open("../icons/waveforms/Triangle.png")
+tri = tri.resize((30, 30), Image.ANTIALIAS)
+triR = ImageTk.PhotoImage(tri)
+saw = Image.open("../icons/waveforms/Sawtooth.png")
+saw = saw.resize((30, 30), Image.ANTIALIAS)
+sawR = ImageTk.PhotoImage(saw)
+sqare = Image.open("../icons/waveforms/Square.png")
+sqare = sqare.resize((30, 30), Image.ANTIALIAS)
+sqareR = ImageTk.PhotoImage(sqare)
+
 sectionOsc = Section(master, "OSCILLATOR", LABELFRAME_FG, LABELFRAME_BG)
 sectionOsc.setPosition(FIRST, FIRST, 2, 1, PAD_X, PAD_Y)
-oscillator = SliderGroup(sectionOsc.getSection())
-oscillator.create(["Pitch", triangleIcon, sawtoothIcon, squareIcon],
-                  [data.wf_frequency, data.wf_triangle, data.wf_sawtooth, data.wf_square])
+
+oscillator = ButtonGroup(sectionOsc.getSection(), startColumn=2)
+oscillator.create([triR, sawR, sqareR], OscType.values(), [data.wf_type, data.wf_type, data.wf_type], width=WIDTH_IMG,
+                  height=HEIGHT_RB)
+oscillator.posHorizontal(padx=14, pady=5)
+
+virtualOsc = SliderGroup(sectionOsc.getSection())
+virtualOsc.createVirtual(["Pitch"], [data.wf_frequency])
 
 # === harmonics section
 sectionHarmonics = Section(master, "HARMONICS", LABELFRAME_FG, LABELFRAME_BG)
-sectionHarmonics.setPosition(THIRD, FIRST, 1, 1, PAD_X, (0, PAD_Y))
-selector = Selector(sectionHarmonics.getSection(), 4, data)
+sectionHarmonics.setPosition(FIRST, FIRST, 1, 1, PAD_X, (110, PAD_Y))
+selector = Selector(sectionHarmonics.getSection(), 10, data)
 
 # === chunk section
 sectionChunk = Section(master, "CHUNK", LABELFRAME_FG, LABELFRAME_BG)
-sectionChunk.setPosition(FOURTH, FIRST, 1, 1, PAD_X, (0, PAD_Y))
+sectionChunk.setPosition(SECOND, FIRST, 1, 1, PAD_X, (0, PAD_Y))
 fig = Figure(figsize=(2.6, 1), facecolor='#F0F0F0')
 axis = fig.add_subplot(111)
 canvas = FigureCanvasTkAgg(fig, master=sectionChunk.getSection())
@@ -130,7 +146,7 @@ t.start()
 
 # === touchpad section
 sectionTouchpad = Section(master, "TOUCH ME", LABELFRAME_FG, LABELFRAME_BG)
-sectionTouchpad.setPosition(FIFTH, FIRST, 2, 1, PAD_X, (0, PAD_Y))
+sectionTouchpad.setPosition(THIRD, FIRST, 2, 1, PAD_X, (0, PAD_Y))
 # sectionTouchpad.innerBox.configure(bg='#fff')
 touchpad = Touchpad(sectionTouchpad.getSection(), 260, 195, data.tp_state)
 
@@ -143,27 +159,24 @@ effects.create(["Attack", "Decay", "Sustain", "Release"],
 
 # === filter section
 sectionFilter = Section(master, "FILTER", LABELFRAME_FG, LABELFRAME_BG)
-sectionFilter.setPosition(THIRD, SECOND, 2, 2, (0, PAD_X), 0)
+sectionFilter.setPosition(SECOND, SECOND, 2, 2, (0, PAD_X), 0)
 effects = SliderGroup(sectionFilter.getSection())
 effects.create(["Reverb", "Cutoff"], [data.ft_reverb, data.ft_cutoff])
 
 # === lfo options
 
-tri = Image.open("../icons/waveforms/Triangle.png")
-tri = tri.resize((20, 20), Image.ANTIALIAS)
-triR = ImageTk.PhotoImage(tri)
-saw = Image.open("../icons/waveforms/Sawtooth.png")
-saw = saw.resize((20, 20), Image.ANTIALIAS)
-sawR = ImageTk.PhotoImage(saw)
-sqare = Image.open("../icons/waveforms/Square.png")
-sqare = sqare.resize((20, 20), Image.ANTIALIAS)
-sqareR = ImageTk.PhotoImage(sqare)
+# tri = tri.resize((20, 20), Image.ANTIALIAS)
+# triR = ImageTk.PhotoImage(tri)
+# saw = saw.resize((20, 20), Image.ANTIALIAS)
+# sawR = ImageTk.PhotoImage(saw)
+# sqare = sqare.resize((20, 20), Image.ANTIALIAS)
+# sqareR = ImageTk.PhotoImage(sqare)
 
 WIDTH_IMG = 20
 HEIGHT_RB = 20
 
 sectionLFO = Section(master, "LFO", LABELFRAME_FG, LABELFRAME_BG)
-sectionLFO.setPosition(FIFTH, SECOND, 1, 1, (0, PAD_X), (0, PAD_Y))
+sectionLFO.setPosition(THIRD, SECOND, 1, 1, (0, PAD_X), (40, PAD_Y))
 lfoType = ButtonGroup(sectionLFO.getSection(), startColumn=2)
 lfoType.create([triR, sawR, sqareR], OscType.values(), [data.lfo_type, data.lfo_type, data.lfo_type], width=WIDTH_IMG,
                height=HEIGHT_RB)
@@ -173,22 +186,13 @@ lfoMode = ButtonGroup(sectionLFO.getSection(), startColumn=3)
 lfoMode.create(["Default", "Filter"], LfoMode.values(), [data.lfo_mode, data.lfo_mode], width=10)
 lfoMode.posVertical(padx=5, pady=15, gap=30)
 
-# lfoStyle = ButtonGroup(sectionLFO.getSection(), startColumn=3)
-
-# lfoStyle.create(["None", "Cutoff", "Volume"], [synth.lfoTriangle, synth.lfoSawtooth, synth.lfoSquare], width=10, variable="style")
-# lfoStyle.posVertical(padx=5, pady=15, gap=30)
-
-# Radiobutton(sectionLFO.getSection(), variable=group, image=triR, value=1, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(1)]).grid(row=FIRST, column=THIRD, padx=5, pady=(0, 60))
-# Radiobutton(sectionLFO.getSection(), variable=group, image=sawR, value=2, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(2)]).grid(row=FIRST, column=THIRD, padx=5, pady=10)
-# Radiobutton(sectionLFO.getSection(), variable=group, image=sqareR, value=3, indicatoron=0, width=WIDTH_IMG, height=HEIGHT_RB, command=lambda: [synth.setStyle(3)]).grid(row=FIRST, column=THIRD, padx=5, pady=(60, 0))
 lfoSlider = SliderGroup(sectionLFO.getSection())
 lfoSlider.create(["Amount", "Rate"], [data.lfo_amount, data.lfo_rate])
 
 effect_pair = EffectPair(touchpad.parent)
-effect_pair.addOptions(oscillator.sliders[0], effects.sliders[1])
-effect_pair.addOptions(oscillator.sliders[0], lfoSlider.sliders[1])
+effect_pair.addOptions(virtualOsc.sliders[0], effects.sliders[1])
+# effect_pair.addOptions(oscillator.sliders[0], lfoSlider.sliders[1])
 effect_pair.addOptions(lfoSlider.sliders[0], effects.sliders[1])
 effect_pair.addOptions(lfoSlider.sliders[0], lfoSlider.sliders[1])
 touchpad.updateOptions(effect_pair)
-
 mainloop()

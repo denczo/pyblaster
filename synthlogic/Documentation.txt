@@ -1,7 +1,0 @@
-https://github.com/Kurene/simple-synthesizer-with-pyqt5-pyaudio/blob/master/main.py
-https://www.mathsisfun.com/algebra/amplitude-period-frequency-phase-shift.html
-http://www.fon.hum.uva.nl/praat/manual/Sounds__Concatenate_with_overlap___.html
-https://medium.com/the-seekers-project/coding-a-basic-reverb-algorithm-an-introduction-to-audio-programming-d5d90ad58bde
-https://ccrma.stanford.edu/~jos/pasp/Comb_Filters.html
-https://ccrma.stanford.edu/~jos/pasp/Delay_Lines.html
-

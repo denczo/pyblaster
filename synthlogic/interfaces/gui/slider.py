@@ -52,6 +52,12 @@ class SliderGroup:
             self.currentColumn += 1
         self.currentRow += 1
 
+    # creates group of sliders which won't be drawn
+    def createVirtual(self, labels, valueCarriers):
+        for i in range(len(labels)):
+            slider = Slider(self.parent, labels[i], valueCarriers[i], self.label)
+            self.sliders.append(slider)
+
 
 class Selector:
     def __init__(self, parent, amount, data):

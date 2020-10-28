@@ -30,8 +30,8 @@ class MidiInterface(object):
         note_state = message[0][0]
         if note_state == 144:
             self.currentFreq = self.notes_as_freq[note]
-            self.data.tp_state.state = True
+            self.data.kb_state.state = True
             self.lastNote = note
         elif note_state == 128 and note == self.lastNote:
-            self.data.tp_state.state = False
-        print(message, self.data.tp_state.state, self.lastNote, note)
+            self.data.kb_state.state = False
+        print(message, self.data.kb_state.state, self.lastNote, note, self.currentFreq)
