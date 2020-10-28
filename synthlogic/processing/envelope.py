@@ -34,7 +34,7 @@ class Env:
             # attack
             if self.pressed_time <= self.attack_phase:
                 self.reached_gain = self.pressed_time / self.attack_phase * self.gain
-            # decay TODO: what happens, when attack is 0?
+            # decay
             elif self.pressed_time <= self.attack_phase + self.decay_phase:
                 self.reached_gain = self.gain - (self.pressed_time - self.attack_phase) / self.decay_phase * (
                         self.gain - self.sustain_level)

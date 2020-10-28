@@ -16,13 +16,14 @@ from synthlogic.structures.value import DataInterface
 
 
 class Synth:
-    def __init__(self, rate=44100, chunk_size=1024, gain=0.05, fade_seq=896):
+    def __init__(self, rate=44100, chunk_size=1024, gain=0.2, fade_seq=896, gui_enabled=False):
 
         self.rate = int(rate)
         self.chunk_size = chunk_size
         self.p = pyaudio.PyAudio()
         self.stream = self.settings(1, self.rate, 1, self.chunk_size)
         self.stream.start_stream()
+        self.gui_enabled = gui_enabled;
 
         self.BUFFERSIZE = 22016
         self.writeable = self.BUFFERSIZE - chunk_size
@@ -81,10 +82,13 @@ class Synth:
         g2 = 0.4
 
         # debug
-        frames = np.zeros(0)
+        #frames = np.zeros(0)
         while self.running:
 
-            pressedTp = midi_interface.data.tp_state.state
+            pressedTp = False
+            if self.gui_enabled:
+                pressedTp = midi_interface.data.tp_state.state
+
             pressedKp = self.data_interface.kb_state.state
             pressed = False
 
@@ -99,12 +103,11 @@ class Synth:
             fc_Lp = self.data_interface.ft_cutoff.value
             M_delay = int(self.data_interface.ft_reverb.value)
             self.x = self.create_samples(start, end)
-            # TODO gain way too much
             self.env.settings(self.data_interface.env_attack.value,
                               self.data_interface.env_decay.value,
                               self.data_interface.env_sustain.value,
                               self.data_interface.env_release.value,
-                              0.8)
+                              self.gain)
 
             # lfo
             lfoType = self.data_interface.lfo_type.state
@@ -115,7 +118,7 @@ class Synth:
             triangle = osc.carrier(self.data_interface.wf_type.state, fc, self.x)
             self.y = triangle
             self.y = osc.harmonics(self.data_interface.wf_type.state, triangle, fc, self.x, self.data_interface.harm_amount, 0)
-            self.y *= self.gain
+            #self.y *= self.gain
             self.y = self.lowpass.apply(self.y, fc_Lp)
             self.y = self.lowpass.applyLfo(self.lfo, self.y)
             self.y *= self.env.apply(pressed)
@@ -138,33 +141,3 @@ class Synth:
 
         # print('ended')
         # wavfile.write('recorded.wav', 44100, frames)
-
-
-def run_synth_no_gui():
-    config = configparser.ConfigParser()
-    config.read('config.ini')
-    config.sections()
-    synth = Synth()
-    data = DataInterface()
-    synth.data_interface = data
-    synth.toggle()
-    # basic setup
-    synth.data_interface.harm_amount = int(config['HARM']['amount'])
-    synth.data_interface.ft_cutoff.value = config['FILTER']['cutoff']
-    synth.data_interface.ft_reverb.value = config['FILTER']['reverb']
-    synth.data_interface.lfo_rate.value = config['LFO']['amount']
-    synth.data_interface.lfo_amount.value = config['LFO']['rate']
-    synth.data_interface.wf_frequency.value = config['OSC']['pitch']
-    synth.data_interface.wf_type.value = config['OSC']['wf']
-
-    synth.data_interface.env_attack.value = config['ENV']['attack']
-    synth.data_interface.env_decay.value = config['ENV']['decay']
-    synth.data_interface.env_sustain.value = config['ENV']['sustain']
-    synth.data_interface.env_release.value = config['ENV']['release']
-
-
-def run_synth_gui():
-    pass
-
-
-#run_synth_no_gui()

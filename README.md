@@ -1,6 +1,16 @@
 # EARDRUM BLASTER
 ### Digital Synthesizer in Python
 
+##### How to use
+
+run with gui: `python3 synth_gui.py`\
+___
+run without gui: `python3 synth_no_gui.py`\
+
+change settings of synth in `config.ini`
+___
+
+
 ##### Components
 - Pyaudio
 - tkinter
@@ -20,7 +30,7 @@
 ##### Planned features
 - remove library Scipy and replace waveform synthesis with own implementation
 - paraphonic
-
+___
 ##### Learn more about DSP and Pyaudio
 
 - similar project

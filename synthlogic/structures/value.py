@@ -89,9 +89,9 @@ class DataInterface:
         self.ft_reverb = ValueCarrier(10000)  # m_delay
         self.ft_cutoff = ValueCarrier(1000, 0.1)  # cuttoff hz
 
-        self.env_attack = ValueCarrier(100)
+        self.env_attack = ValueCarrier(10)
         self.env_decay = ValueCarrier(100)
-        self.env_sustain = ValueCarrier(100)
+        self.env_sustain = ValueCarrier(0.2)
         self.env_release = ValueCarrier(100)
 
         self.lfo_rate = ValueCarrier(20)  # 20 hz

@@ -13,7 +13,7 @@ from PIL import Image, ImageTk
 from synthlogic.interfaces.gui.section import Section
 from synthlogic.interfaces.gui.slider import EffectPair, SliderGroup, Selector
 from synthlogic.interfaces.gui.touchpad import Touchpad
-from synthlogic.main.run import Synth
+from synthlogic.main.synth import Synth
 from synthlogic.structures.value import DataInterface, LfoMode, OscType
 
 master = Tk()
@@ -164,14 +164,6 @@ effects = SliderGroup(sectionFilter.getSection())
 effects.create(["Reverb", "Cutoff"], [data.ft_reverb, data.ft_cutoff])
 
 # === lfo options
-
-# tri = tri.resize((20, 20), Image.ANTIALIAS)
-# triR = ImageTk.PhotoImage(tri)
-# saw = saw.resize((20, 20), Image.ANTIALIAS)
-# sawR = ImageTk.PhotoImage(saw)
-# sqare = sqare.resize((20, 20), Image.ANTIALIAS)
-# sqareR = ImageTk.PhotoImage(sqare)
-
 WIDTH_IMG = 20
 HEIGHT_RB = 20
 
