@@ -20,13 +20,14 @@ def midi_info():
 
 def run_synth_no_gui():
     port = None
-    # while not isinstance(port, int):
-    #     midi_info()
-    #     port = input()
-    #     try:
-    #         port = int(port)
-    #     except ValueError:
-    #         print("Port need to be a number!\n")
+    while not isinstance(port, int):
+        midi_info()
+        #port = input()
+        port = 1
+        try:
+            port = int(port)
+        except ValueError:
+            print("Port need to be a number!\n")
 
     config = configparser.ConfigParser()
     config.read('config.ini')
