@@ -80,7 +80,7 @@ class Synth:
     def change_midi_port(self, port):
         print("midi port changed to:", port)
         if port is not None and port != 'None':
-            self.midi_interface = MidiInterface(int(port[-1]), midi_in, self.data_interface)
+            self.midi_interface = MidiInterface(int(port[-1]), self.data_interface)
             self.midi_interface.midi_in.set_callback(self.midi_interface)
         elif port == 'None':
             self.midi_interface = None
@@ -167,20 +167,19 @@ def midi_info():
 
 def run_synth_no_gui():
     port = None
-    while not isinstance(port, int):
-        midi_info()
-        port = input()
-        try:
-            port = int(port)
-        except ValueError:
-            print("Port need to be a number!\n")
+    # while not isinstance(port, int):
+    #     midi_info()
+    #     port = input()
+    #     try:
+    #         port = int(port)
+    #     except ValueError:
+    #         print("Port need to be a number!\n")
 
     config = configparser.ConfigParser()
     config.read('config.ini')
     config.sections()
     synth = Synth()
-    synth.change_midi_port(midi_in.get_port_name(port))
-    synth.midi_interface
+    synth.change_midi_port("1")
     data = DataInterface()
     synth.data_interface = data
     synth.toggle()

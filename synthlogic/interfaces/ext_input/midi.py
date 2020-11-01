@@ -2,9 +2,9 @@ import rtmidi
 
 
 class MidiInterface(object):
-    def __init__(self, port, midi_in, data):
+    def __init__(self, port, data):
         self.port = port
-        self.midi_in = midi_in
+        self.midi_in = rtmidi.MidiIn()
         self.available_ports = self.midi_in.get_ports()
         print(self.available_ports)
         self.notes_as_freq = self.calc_midi_freqs()
@@ -28,7 +28,6 @@ class MidiInterface(object):
         message = event
         note = message[0][1]
         note_state = message[0][0]
-        print("test")
         if note_state == 144:
             self.currentFreq = self.notes_as_freq[note]
             self.data.kb_state.state = True
