@@ -34,7 +34,7 @@ def run_synth_no_gui():
     synth = Synth()
     synth.change_midi_port(midi_in.get_port_name(port))
     data = DataInterface()
-    synth.data_0interface = data
+    synth.data_interface = data
     synth.toggle()
     print("OK")
     # basic setup
