@@ -96,6 +96,7 @@ class Synth:
             pressedKp = False
             if self.midi_interface is not None:
                 pressedKp = self.data_interface.kb_state.state
+                print(pressedKp)
 
             pressedTp = self.data_interface.tp_state.state
             pressed = False
@@ -106,6 +107,7 @@ class Synth:
             elif pressedKp and self.midi_interface is not None:
                 currentFreq = self.midi_interface.currentFreq
                 pressed = pressedKp
+                print(currentFreq)
 
             fc = currentFreq
             fc_Lp = self.data_interface.ft_cutoff.value_log
