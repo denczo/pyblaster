@@ -20,23 +20,22 @@ def midi_info():
 
 def run_synth_no_gui():
     port = None
-    while not isinstance(port, int):
-        midi_info()
-        port = input()
-        try:
-            port = int(port)
-        except ValueError:
-            print("Port need to be a number!\n")
+    # while not isinstance(port, int):
+    #     midi_info()
+    #     port = input()
+    #     try:
+    #         port = int(port)
+    #     except ValueError:
+    #         print("Port need to be a number!\n")
 
     config = configparser.ConfigParser()
     config.read('config.ini')
     config.sections()
     synth = Synth()
-    synth.change_midi_port(midi_in.get_port_name(port))
+    synth.change_midi_port("1")
     data = DataInterface()
     synth.data_interface = data
     synth.toggle()
-    print("OK")
     # basic setup
     synth.data_interface.harm_amount = int(config['HARM']['amount'])
 
@@ -54,6 +53,6 @@ def run_synth_no_gui():
     synth.data_interface.env_decay.value = config['ENV']['decay']
     synth.data_interface.env_sustain.value = config['ENV']['sustain']
     synth.data_interface.env_release.value = config['ENV']['release']
-    print("OK OK")
+
 
 run_synth_no_gui()
