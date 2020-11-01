@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import messagebox
 
 import numpy as np
+import rtmidi
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
@@ -31,7 +32,7 @@ startX = int((screenWidth / 2) - (winWidth / 2))
 startY = int((screenHeight / 2) - (winHeight / 2))
 master.geometry('{}x{}+{}+{}'.format(winWidth, winHeight, startX, startY))
 # synthesizer
-synth = Synth()
+synth = Synth(gui_enabled=True)
 data = DataInterface()
 synth.data_interface = data
 x = np.arange(0, 1024)
@@ -57,8 +58,6 @@ def updatePlot():
 
 
 def on_close():
-    # custom close options, here's one example:
-
     close = messagebox.askokcancel("Close", "Would you like to close the EARDRUM BLASTER?")
     if close:
         synth.running = False
@@ -187,4 +186,22 @@ effect_pair.addOptions(virtualOsc.sliders[0], effects.sliders[1])
 effect_pair.addOptions(lfoSlider.sliders[0], effects.sliders[1])
 effect_pair.addOptions(lfoSlider.sliders[0], lfoSlider.sliders[1])
 touchpad.updateOptions(effect_pair)
+
+# === midi dropdown menu
+
+sectionMidi = Section(master, "MIDI DEVICE", LABELFRAME_FG, LABELFRAME_BG)
+sectionMidi.setPosition(FOURTH, SECOND, 1, 1, (0, PAD_X), (0, PAD_Y))
+
+variable = StringVar()
+
+midi_in = rtmidi.MidiIn()
+midi_devices = midi_in.get_ports()
+midi_devices.append("None")
+variable.set(midi_devices[-1])
+
+midi_options = OptionMenu(sectionMidi.getSection(), variable, *midi_devices, command=lambda x: synth.change_midi_port(x))
+midi_options.config(width=30, font=('Helvetica', 10))
+midi_options.grid()
+
+
 mainloop()

@@ -23,6 +23,7 @@ class Env:
         self.sustain_level = s
         self.release_phase = r
         self.gain = g
+        #print(a,d,s,r)
 
     def apply(self, pressed):
 

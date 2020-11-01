@@ -6,7 +6,7 @@ class MidiInterface(object):
         self.port = port
         self.midi_in = rtmidi.MidiIn()
         self.available_ports = self.midi_in.get_ports()
-        print(self.available_ports)
+        #print(self.available_ports)
         self.notes_as_freq = self.calc_midi_freqs()
         self.midi_in.open_port(port)
         self.port_name = self.midi_in.get_port_name(port)
@@ -35,3 +35,4 @@ class MidiInterface(object):
         elif note_state == 128 and note == self.lastNote:
             self.data.kb_state.state = False
         print(message, self.data.kb_state.state, self.lastNote, note, self.currentFreq)
+

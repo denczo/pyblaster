@@ -18,12 +18,14 @@ from synthlogic.structures.value import DataInterface
 class Synth:
     def __init__(self, rate=44100, chunk_size=1024, gain=0.2, fade_seq=896, gui_enabled=False):
 
+        self.midi_port = None
+        self.midi_interface = None
         self.rate = int(rate)
         self.chunk_size = chunk_size
         self.p = pyaudio.PyAudio()
         self.stream = self.settings(1, self.rate, 1, self.chunk_size)
         self.stream.start_stream()
-        self.gui_enabled = gui_enabled;
+        self.gui_enabled = gui_enabled
 
         self.BUFFERSIZE = 22016
         self.writeable = self.BUFFERSIZE - chunk_size
@@ -71,12 +73,18 @@ class Synth:
     def create_samples(self, start, end):
         return np.arange(start, end + self.fade_seq) / self.rate
 
+    def change_midi_port(self, port):
+        print("midi port changed to:", port)
+        if port is not None and port != 'None':
+            self.midi_interface = MidiInterface(int(port[-1]), self.data_interface)
+            self.midi_interface.midi_in.set_callback(self.midi_interface)
+        elif port == 'None':
+            self.midi_interface = None
+
     def render(self):
 
         start = 0
         end = self.chunk_size
-        midi_interface = MidiInterface(0, self.data_interface)
-        midi_interface.midi_in.set_callback(midi_interface)
         currentFreq = 0
         g1 = 0.4
         g2 = 0.4
@@ -85,34 +93,34 @@ class Synth:
         #frames = np.zeros(0)
         while self.running:
 
-            pressedTp = False
-            if self.gui_enabled:
-                pressedTp = midi_interface.data.tp_state.state
+            pressedKp = False
+            if self.midi_interface is not None:
+                pressedKp = self.data_interface.kb_state.state
 
-            pressedKp = self.data_interface.kb_state.state
+            pressedTp = self.data_interface.tp_state.state
             pressed = False
 
             if pressedTp:
-                currentFreq = self.data_interface.wf_frequency.value
+                currentFreq = self.data_interface.wf_frequency.value_log
                 pressed = pressedTp
-            elif pressedKp:
-                currentFreq = midi_interface.currentFreq
+            elif pressedKp and self.midi_interface is not None:
+                currentFreq = self.midi_interface.currentFreq
                 pressed = pressedKp
 
             fc = currentFreq
-            fc_Lp = self.data_interface.ft_cutoff.value
+            fc_Lp = self.data_interface.ft_cutoff.value_log
             M_delay = int(self.data_interface.ft_reverb.value)
             self.x = self.create_samples(start, end)
-            self.env.settings(self.data_interface.env_attack.value,
-                              self.data_interface.env_decay.value,
-                              self.data_interface.env_sustain.value,
-                              self.data_interface.env_release.value,
+            self.env.settings(self.data_interface.env_attack.value_log,
+                              self.data_interface.env_decay.value_log,
+                              self.data_interface.env_sustain.value_log,
+                              self.data_interface.env_release.value_log,
                               self.gain)
 
             # lfo
             lfoType = self.data_interface.lfo_type.state
-            fm = self.data_interface.lfo_rate.value
-            fdelta = self.data_interface.lfo_amount.value
+            fm = self.data_interface.lfo_rate.value_log
+            fdelta = self.data_interface.lfo_amount.value_log
             self.lfo = osc.lfo(lfoType, fm, self.x, fdelta)
 
             triangle = osc.carrier(self.data_interface.wf_type.state, fc, self.x)

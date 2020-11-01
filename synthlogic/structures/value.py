@@ -56,11 +56,19 @@ class ValueCarrier:
 
     @property
     def value(self):
-        return float(self._value * self.max)
+        return float(self._value)
 
-    # logarithmic scale, value between 0.02 and 2
     @value.setter
     def value(self, value):
+        self._value = value
+
+    @property
+    def value_log(self):
+        return float(self._value) * self.max
+
+    # logarithmic scale, value between 0.02 and 2
+    @value_log.setter
+    def value_log(self, value):
         if float(value) <= 0:
             self._value = 0
         else:
