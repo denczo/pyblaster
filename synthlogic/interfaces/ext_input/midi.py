@@ -2,9 +2,9 @@ import rtmidi
 
 
 class MidiInterface(object):
-    def __init__(self, port, data):
+    def __init__(self, port, midi_in, data):
         self.port = port
-        self.midi_in = rtmidi.MidiIn()
+        self.midi_in = midi_in
         self.available_ports = self.midi_in.get_ports()
         print(self.available_ports)
         self.notes_as_freq = self.calc_midi_freqs()

@@ -80,7 +80,7 @@ class Synth:
     def change_midi_port(self, port):
         print("midi port changed to:", port)
         if port is not None and port != 'None':
-            self.midi_interface = MidiInterface(int(port[-1]), self.data_interface)
+            self.midi_interface = MidiInterface(int(port[-1]), midi_in, self.data_interface)
             self.midi_interface.midi_in.set_callback(self.midi_interface)
         elif port == 'None':
             self.midi_interface = None
@@ -102,7 +102,6 @@ class Synth:
             pressedKp = False
             if self.midi_interface is not None:
                 pressedKp = self.data_interface.kb_state.state
-                print("test", pressedKp)
 
             pressedTp = self.data_interface.tp_state.state
             pressed = False
@@ -113,7 +112,6 @@ class Synth:
             elif pressedKp and self.midi_interface is not None:
                 currentFreq = self.midi_interface.currentFreq
                 pressed = pressedKp
-                print(currentFreq)
 
             fc = currentFreq
             fc_Lp = self.data_interface.ft_cutoff.value_log
@@ -182,6 +180,7 @@ def run_synth_no_gui():
     config.sections()
     synth = Synth()
     synth.change_midi_port(midi_in.get_port_name(port))
+    synth.midi_interface
     data = DataInterface()
     synth.data_interface = data
     synth.toggle()
