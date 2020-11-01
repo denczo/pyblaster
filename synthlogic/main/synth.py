@@ -72,10 +72,10 @@ class Synth:
     def create_samples(self, start, end):
         return np.arange(start, end + self.fade_seq) / self.rate
 
-    def change_midi_port(self, port):
+    def change_midi_port(self, port, port_count):
         print("midi port changed to:", port)
-        if port is not None and port != 'None':
-            self.midi_interface = MidiInterface(int(port[-1]), self.data_interface)
+        if port is not None and port < port_count:
+            self.midi_interface = MidiInterface(int(port), self.data_interface)
             self.midi_interface.midi_in.set_callback(self.midi_interface)
         elif port == 'None':
             self.midi_interface = None

@@ -198,8 +198,8 @@ midi_in = rtmidi.MidiIn()
 midi_devices = midi_in.get_ports()
 midi_devices.append("None")
 variable.set(midi_devices[-1])
-
-midi_options = OptionMenu(sectionMidi.getSection(), variable, *midi_devices, command=lambda x: synth.change_midi_port(x))
+port_count = midi_in.get_port_count()
+midi_options = OptionMenu(sectionMidi.getSection(), variable, *midi_devices, command=lambda x: synth.change_midi_port(midi_devices.index(variable.get()), port_count))
 midi_options.config(width=30, font=('Helvetica', 10))
 midi_options.grid()
 
