@@ -33,6 +33,7 @@ class MidiInterface(object):
             self.data.kb_state.state = True
             self.lastNote = note
         elif note_state == 128 and note == self.lastNote:
+            print( self.data.kb_state.state)
             self.data.kb_state.state = False
         print(message, self.data.kb_state.state, self.lastNote, note, self.currentFreq)
 

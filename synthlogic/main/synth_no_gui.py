@@ -32,9 +32,7 @@ def run_synth_no_gui():
     config.read('config.ini')
     config.sections()
     synth = Synth()
-    synth.change_midi_port("1")
-    data = DataInterface()
-    synth.data_interface = data
+    synth.change_midi_port(midi_in.get_port_name(port))
     synth.toggle()
     # basic setup
     synth.data_interface.harm_amount = int(config['HARM']['amount'])

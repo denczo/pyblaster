@@ -1,12 +1,9 @@
-import configparser
 
 import pyaudio
 import numpy as np
 import threading
 import queue
 import sys
-
-import rtmidi
 from scipy.io import wavfile
 
 sys.path.append("/home/pi/synth")
@@ -90,8 +87,6 @@ class Synth:
         currentFreq = 0
         g1 = 0.4
         g2 = 0.4
-        self.data_interface.kb_state.state = False
-        self.data_interface.tp_state.state = False
 
         # debug
         #frames = np.zeros(0)
