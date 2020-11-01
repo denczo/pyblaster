@@ -22,8 +22,7 @@ def run_synth_no_gui():
     port = None
     while not isinstance(port, int):
         midi_info()
-        #port = input()
-        port = 1
+        port = input()
         try:
             port = int(port)
         except ValueError:
