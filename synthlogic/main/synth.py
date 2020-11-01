@@ -151,5 +151,4 @@ class Synth:
             # if start >= 132000:
             #    self.toggle()
 
-        # print('ended')
         # wavfile.write('recorded.wav', 44100, frames)
