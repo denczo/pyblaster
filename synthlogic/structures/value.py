@@ -26,8 +26,8 @@ class LfoMode(ExtendedEnum):
 
 class StateCarrier:
     def __init__(self, states):
-        self._state = None
         self.states = states
+        self._state = None
 
     @property
     def state(self):
