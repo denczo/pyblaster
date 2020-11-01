@@ -1,6 +1,9 @@
 import configparser
+import sys
+
 import rtmidi
 
+sys.path.append("/home/pi/synth")
 from synthlogic.main.synth import Synth
 from synthlogic.structures.value import DataInterface
 
@@ -33,6 +36,7 @@ def run_synth_no_gui():
     data = DataInterface()
     synth.data_0interface = data
     synth.toggle()
+    print("OK")
     # basic setup
     synth.data_interface.harm_amount = int(config['HARM']['amount'])
 
@@ -50,6 +54,6 @@ def run_synth_no_gui():
     synth.data_interface.env_decay.value = config['ENV']['decay']
     synth.data_interface.env_sustain.value = config['ENV']['sustain']
     synth.data_interface.env_release.value = config['ENV']['release']
-
+    print("OK OK")
 
 run_synth_no_gui()
