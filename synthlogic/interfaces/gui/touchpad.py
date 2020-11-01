@@ -1,7 +1,5 @@
 from tkinter import *
 from PIL import Image, ImageTk
-import logging
-logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.disable())
 
 
 class Touchpad:
@@ -70,7 +68,6 @@ class Touchpad:
         yValue = self.convert2Value(self.y, self.height, 2)
         if self.effectPair is not None:
             params = self.effectPair.valueCarriers()
-            logging.info("MOD ", params[0].label, params[1].label)
             params[0].valueCarrier.value = xValue
             params[1].valueCarrier.value = yValue
 

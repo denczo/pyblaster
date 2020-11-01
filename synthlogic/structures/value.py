@@ -13,15 +13,14 @@ class ExtendedEnum(Enum):
 
 
 class OscType(ExtendedEnum):
-    TRIANGLE = 1
-    SAWTOOTH = 2
-    SQUARE = 3
-    DEFAULT = 4
+    TRIANGLE = 0
+    SAWTOOTH = 1
+    SQUARE = 2
 
 
 class LfoMode(ExtendedEnum):
-    DEFAULT = 1
-    FILTER = 2
+    DEFAULT = 0
+    FILTER = 1
 
 
 class StateCarrier:
@@ -38,7 +37,7 @@ class StateCarrier:
         if value in self.states:
             self._state = value
         else:
-            raise ValueError("Value can only be one of the following ", self.states)
+            raise ValueError("Value need to be of type int and can only be one of the following ", self.states)
 
     # for command attribute in tkinter widgets
     def saveVal(self, value):
@@ -90,17 +89,18 @@ class ChunkFactory:
 
 class DataInterface:
     def __init__(self):
-        maxGain = 0.6
-        self.wf_frequency = ValueCarrier(2000)
+        maxGain = 0.2
+        self.wf_frequency = ValueCarrier(30000)
         self.wf_type = StateCarrier(OscType.values())
 
-        self.ft_reverb = ValueCarrier(10000)  # m_delay
+        self.ft_reverb = ValueCarrier(20000)  # m_delay
         self.ft_cutoff = ValueCarrier(1000, 0.1)  # cuttoff hz
 
-        self.env_attack = ValueCarrier(10)
-        self.env_decay = ValueCarrier(100)
-        self.env_sustain = ValueCarrier(0.2)
-        self.env_release = ValueCarrier(100)
+        # time based, except for sustain
+        self.env_attack = ValueCarrier(20)
+        self.env_decay = ValueCarrier(20)
+        self.env_sustain = ValueCarrier(maxGain)
+        self.env_release = ValueCarrier(20)
 
         self.lfo_rate = ValueCarrier(20)  # 20 hz
         self.lfo_amount = ValueCarrier(100, 0.1)  # fdelta

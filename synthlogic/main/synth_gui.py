@@ -35,7 +35,7 @@ master.geometry('{}x{}+{}+{}'.format(winWidth, winHeight, startX, startY))
 synth = Synth(gui_enabled=True)
 data = DataInterface()
 synth.data_interface = data
-x = np.arange(0, 1024)
+x = np.arange(0, synth.chunk_size)
 synth.toggle()
 
 
@@ -48,13 +48,13 @@ def updatePlot():
     axis.spines['right'].set_visible(False)
     axis.spines['bottom'].set_visible(False)
     axis.spines['left'].set_visible(False)
-    bla = synth.queue.get()
-    axis.plot(x, bla[:1024])
+    buffer = synth.queue.get()
+    axis.plot(x, buffer[:synth.chunk_size])
     fig.subplots_adjust(left=0.05, right=0.95, bottom=0.1, top=0.9)
 
     canvas.draw()
     # every 10ms; raise, to improve performance
-    master.after(10, updatePlot)
+    master.after(50, updatePlot)
 
 
 def on_close():

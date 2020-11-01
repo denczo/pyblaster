@@ -38,11 +38,10 @@ class Env:
             # decay
             elif self.pressed_time <= self.attack_phase + self.decay_phase:
                 self.reached_gain = self.gain - (self.pressed_time - self.attack_phase) / self.decay_phase * (
-                        self.gain - self.sustain_level)
+                        self.gain - (self.gain * self.sustain_level))
             # sustain
             elif self.pressed_time > self.attack_phase + self.decay_phase:
-                self.reached_gain = self.sustain_level
-
+                self.reached_gain = self.gain*self.sustain_level
         else:
             self.released_time = time.time() - self.r_start_time
             self.p_start_time = time.time()

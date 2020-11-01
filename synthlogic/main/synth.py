@@ -15,7 +15,7 @@ from synthlogic.structures.value import DataInterface
 
 
 class Synth:
-    def __init__(self, rate=44100, chunk_size=1024, gain=0.2, fade_seq=896, gui_enabled=False):
+    def __init__(self, rate=44100, chunk_size=256, gain=0.25, fade_seq=896, gui_enabled=False):
 
         self.midi_port = None
         self.midi_interface = None
@@ -75,9 +75,10 @@ class Synth:
     def change_midi_port(self, port, port_count):
         print("midi port changed to:", port)
         if port is not None and port < port_count:
+            self.midi_interface = None
             self.midi_interface = MidiInterface(int(port), self.data_interface)
             self.midi_interface.midi_in.set_callback(self.midi_interface)
-        elif port == 'None':
+        else:
             self.midi_interface = None
 
     def render(self):
@@ -107,15 +108,19 @@ class Synth:
                 pressed = pressedKp
 
             fc = currentFreq
-            fc_Lp = self.data_interface.ft_cutoff.value_log
-            M_delay = int(self.data_interface.ft_reverb.value)
-            self.x = self.create_samples(start, end)
-            self.env.settings(self.data_interface.env_attack.value_log,
-                              self.data_interface.env_decay.value_log,
-                              self.data_interface.env_sustain.value_log,
-                              self.data_interface.env_release.value_log,
-                              self.gain)
+            if self.gui_enabled:
+                fc_Lp = self.data_interface.ft_cutoff.value_log
+                M_delay = int(self.data_interface.ft_reverb.value_log)
+            else:
+                fc_Lp = self.data_interface.ft_cutoff.value
+                M_delay = int(self.data_interface.ft_reverb.value)
 
+            self.x = self.create_samples(start, end)
+            self.env.settings(self.data_interface.env_attack.value,
+                              self.data_interface.env_decay.value,
+                              self.data_interface.env_sustain.value,
+                              self.data_interface.env_release.value,
+                              self.gain)
             # lfo
             lfoType = self.data_interface.lfo_type.state
             fm = self.data_interface.lfo_rate.value_log
@@ -125,7 +130,6 @@ class Synth:
             triangle = osc.carrier(self.data_interface.wf_type.state, fc, self.x)
             self.y = triangle
             self.y = osc.harmonics(self.data_interface.wf_type.state, triangle, fc, self.x, self.data_interface.harm_amount, 0)
-            #self.y *= self.gain
             self.y = self.lowpass.apply(self.y, fc_Lp)
             self.y = self.lowpass.applyLfo(self.lfo, self.y)
             self.y *= self.env.apply(pressed)
@@ -134,9 +138,6 @@ class Synth:
 
             # for visualisation
             self.queue.put(self.chunk)
-
-            # self.chunk *= self.gain
-
             self.smoother.buffer = self.y[-self.fade_seq:]
             self.stream.write(self.chunk.astype(np.float32).tostring())
             # frames = np.append(frames, self.chunk)
