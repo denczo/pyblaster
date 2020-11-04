@@ -3,13 +3,24 @@
 
 ##### How to use
 
-run with gui: `python3 synth_gui.py`\
-___
-run without gui: `python3 synth_no_gui.py`\
+install all required libraries (listed under components)
+
+run with gui: `python3 /synthlogic/main/synth_gui.py`
+
+*OR*
+ 
+run without gui: `python3 /synthlogic/main/synth_no_gui.py`
 
 change settings of synth in `config.ini`
 ___
 
+##### How to install on Raspberry Pi
+running the synthesizer on your Raspberry Pi is currently experimental.
+It will run but it's not optimized for it. It was testet on a *Raspberry Pi 2 B*.
+For those who still want to try it out, here is a tutorial how to install it:
+http://denicz.info/2020/11/04/how-to-install-eardrum-blaster-on-raspberry-pi/
+
+___
 
 ##### Components
 - Pyaudio
@@ -17,6 +28,7 @@ ___
 - Python 3
 - python-rtMidi
 - Scipy
+- numpy
 
 ##### Features
 - 3 Waveforms 
@@ -24,12 +36,14 @@ ___
 - 4 Phase Envelope 
     - Attack, Decay, Sustain, Release
 - Filter: Low-Pass, Reverb
-- Midi 
+- Midi-In
 - LFO (to controll pitch or low-pass)
+- version with GUI and version which can be run from console
 
 ##### Planned features
 - remove library Scipy and replace waveform synthesis with own implementation
-- paraphonic
+- paraphony
+- optimize performance on Raspberry Pi
 ___
 ##### Learn more about DSP and Pyaudio
 

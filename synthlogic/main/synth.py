@@ -28,7 +28,7 @@ class Synth:
 
         self.BUFFERSIZE = 22016
         self.writeable = self.BUFFERSIZE - chunk_size
-        self.waveform = ["sine", "triangle", "sawtooth", "square"]
+        self.waveform = ["triangle", "sawtooth", "square"]
         self.x = np.zeros(chunk_size + fade_seq)
         self.t = self.x
         self.y = np.zeros(chunk_size + fade_seq)
