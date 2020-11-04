@@ -25,7 +25,7 @@ class ButtonGroup:
         self.currentRow = startRow
         self.currentColumn = startColumn
         self.selection = StringVar()
-        self.selection.set(1)
+        self.selection.set(0)
 
     # creates group of buttons with labels or icons
     def create(self, labels, values, stateCarriers, width=0, height=0):

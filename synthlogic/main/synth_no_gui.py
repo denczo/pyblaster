@@ -33,8 +33,12 @@ def run_synth_no_gui():
     synth = Synth()
     synth.change_midi_port(port, midi_in.get_port_count())
     synth.toggle()
+
     # basic setup
+    synth.data_interface.wf_type.state = int(config['OSC']['wf'])
+
     synth.data_interface.harm_amount = int(config['HARM']['amount'])
+
     synth.data_interface.ft_cutoff.value = config['FILTER']['cutoff']
     synth.data_interface.ft_reverb.value = config['FILTER']['reverb']
 

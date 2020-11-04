@@ -15,7 +15,7 @@ from synthlogic.structures.value import DataInterface
 
 
 class Synth:
-    def __init__(self, rate=44100, chunk_size=256, gain=0.25, fade_seq=896, gui_enabled=False):
+    def __init__(self, rate=44100, chunk_size=256, gain=0.25, fade_seq=256, gui_enabled=False):
 
         self.midi_port = None
         self.midi_interface = None
@@ -44,7 +44,7 @@ class Synth:
         self.lowpass = LowPass(200)
         self.allpass = Allpass(self.BUFFERSIZE, self.chunk_size)
         self.smoother = osc.Smoother(self.fade_seq)
-        self.env = Env(0, 0.01, 0.5, 0.1, gain)
+        self.env = Env(0, 0, 0, 0, gain)
         self.lfo = 0
 
     def settings(self, channels, rate, output, chunk_size):
@@ -89,8 +89,6 @@ class Synth:
         g1 = 0.4
         g2 = 0.4
 
-        # debug
-        #frames = np.zeros(0)
         while self.running:
 
             pressedKp = False
@@ -111,25 +109,31 @@ class Synth:
             if self.gui_enabled:
                 fc_Lp = self.data_interface.ft_cutoff.value_log
                 M_delay = int(self.data_interface.ft_reverb.value_log)
+                self.env.settings(self.data_interface.env_attack.value_log,
+                                  self.data_interface.env_decay.value_log,
+                                  self.data_interface.env_sustain.value_log,
+                                  self.data_interface.env_release.value_log,
+                                  self.gain)
             else:
                 fc_Lp = self.data_interface.ft_cutoff.value
                 M_delay = int(self.data_interface.ft_reverb.value)
+                self.env.settings(self.data_interface.env_attack.value,
+                                  self.data_interface.env_decay.value,
+                                  self.data_interface.env_sustain.value,
+                                  self.data_interface.env_release.value,
+                                  self.gain)
 
             self.x = self.create_samples(start, end)
-            self.env.settings(self.data_interface.env_attack.value,
-                              self.data_interface.env_decay.value,
-                              self.data_interface.env_sustain.value,
-                              self.data_interface.env_release.value,
-                              self.gain)
+
             # lfo
             lfoType = self.data_interface.lfo_type.state
             fm = self.data_interface.lfo_rate.value_log
             fdelta = self.data_interface.lfo_amount.value_log
             self.lfo = osc.lfo(lfoType, fm, self.x, fdelta)
 
-            triangle = osc.carrier(self.data_interface.wf_type.state, fc, self.x)
-            self.y = triangle
-            self.y = osc.harmonics(self.data_interface.wf_type.state, triangle, fc, self.x, self.data_interface.harm_amount, 0)
+            wf = self.gain*osc.carrier(self.data_interface.wf_type.state, fc, self.x)
+            self.y = osc.harmonics(self.data_interface.wf_type.state, wf, fc, self.x, self.data_interface.harm_amount, 0)
+
             self.y = self.lowpass.apply(self.y, fc_Lp)
             self.y = self.lowpass.applyLfo(self.lfo, self.y)
             self.y *= self.env.apply(pressed)
@@ -140,11 +144,6 @@ class Synth:
             self.queue.put(self.chunk)
             self.smoother.buffer = self.y[-self.fade_seq:]
             self.stream.write(self.chunk.astype(np.float32).tostring())
-            # frames = np.append(frames, self.chunk)
 
             start = end
             end += self.chunk_size
-            # if start >= 132000:
-            #    self.toggle()
-
-        # wavfile.write('recorded.wav', 44100, frames)

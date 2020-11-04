@@ -10,7 +10,11 @@ class Env:
         self.release_phase = r
 
         self.gain = g
-        self.reached_gain = 0
+        self.reached_level = 0
+        # current level, when key is pressed
+        self.asc_level = 0
+        # current level, when key is released
+        self.desc_level = 0
 
         self.p_start_time = 0
         self.r_start_time = 0
@@ -34,23 +38,31 @@ class Env:
 
             # attack
             if self.pressed_time <= self.attack_phase:
-                self.reached_gain = self.pressed_time / self.attack_phase * self.gain
+                self.asc_level = self.pressed_time / self.attack_phase * self.gain
             # decay
             elif self.pressed_time <= self.attack_phase + self.decay_phase:
-                self.reached_gain = self.gain - (self.pressed_time - self.attack_phase) / self.decay_phase * (
+                self.asc_level = self.gain - (self.pressed_time - self.attack_phase) / self.decay_phase * (
                         self.gain - (self.gain * self.sustain_level))
             # sustain
             elif self.pressed_time > self.attack_phase + self.decay_phase:
-                self.reached_gain = self.gain*self.sustain_level
+                self.asc_level = self.gain * self.sustain_level
+
+            self.reached_level = self.asc_level
+            self.desc_level = self.asc_level
+
         else:
             self.released_time = time.time() - self.r_start_time
             self.p_start_time = time.time()
             self.pressed_time = 0
+            fraction = self.asc_level / self.gain
 
             # release
-            if self.reached_gain > 0.001 and self.release_phase > 0:
-                self.reached_gain = (self.release_phase - self.released_time) / self.release_phase * self.reached_gain
+            if self.desc_level > 0.001 and self.release_phase > 0:
+                self.desc_level = (self.release_phase * fraction - self.released_time) / (
+                            self.release_phase * fraction) * self.asc_level
             else:
-                self.reached_gain = 0
+                self.desc_level = 0
 
-        return self.reached_gain
+            self.reached_level = self.desc_level
+
+        return self.reached_level

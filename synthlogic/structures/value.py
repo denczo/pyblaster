@@ -75,21 +75,12 @@ class ValueCarrier:
 
     # for command attribute in tkinter widgets
     def saveVal(self, value):
-        self.value = value
-
-
-class ChunkFactory:
-    def __init__(self, rate, fade_seq):
-        self.rate = rate
-        self.fade_seq = fade_seq
-
-    def createChunk(self, x, start, end):
-        pass
+        self.value_log = value
 
 
 class DataInterface:
     def __init__(self):
-        maxGain = 0.2
+        maxGain = 1
         self.wf_frequency = ValueCarrier(30000)
         self.wf_type = StateCarrier(OscType.values())
 

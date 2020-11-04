@@ -53,7 +53,7 @@ def updatePlot():
     fig.subplots_adjust(left=0.05, right=0.95, bottom=0.1, top=0.9)
 
     canvas.draw()
-    # every 10ms; raise, to improve performance
+    # every 100ms; raise, to improve performance; lower, to increase framerate
     master.after(50, updatePlot)
 
 
@@ -188,7 +188,6 @@ effect_pair.addOptions(lfoSlider.sliders[0], lfoSlider.sliders[1])
 touchpad.updateOptions(effect_pair)
 
 # === midi dropdown menu
-
 sectionMidi = Section(master, "MIDI DEVICE", LABELFRAME_FG, LABELFRAME_BG)
 sectionMidi.setPosition(FOURTH, SECOND, 1, 1, (0, PAD_X), (0, PAD_Y))
 
