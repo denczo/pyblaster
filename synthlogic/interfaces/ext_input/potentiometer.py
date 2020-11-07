@@ -16,10 +16,10 @@ class MCP3008:
 def read_pots(amount):
     for i in range(amount):
         print(mcp.analogInput(i))
-        time.sleep(500)
     print("________________")
+    time.sleep(0.5)
 
 
 mcp = MCP3008(0)
 while True:
-    read_pots(5)
+    read_pots(8)
