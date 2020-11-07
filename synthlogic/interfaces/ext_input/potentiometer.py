@@ -14,6 +14,23 @@ class Potentiometer:
 
 
 class PotGroup:
-    def __init__(self, id):
-        self.id = id
+    def __init__(self, amount):
+        self.pots = self.create_pots(amount)
+        self.pot_amount = amount
 
+    def create_pots(self, amount):
+        pots = []
+        for i in range(amount):
+            pot = Potentiometer()
+            pots.append(pot)
+
+        return pots
+
+    def print_pots(self):
+        for i in range(self.pot_amount):
+            print(self.pots[i].analogInput(i))
+
+
+pots = PotGroup(8)
+while True:
+    pots.print_pots()
