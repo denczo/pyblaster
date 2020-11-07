@@ -1,5 +1,5 @@
 import spidev
-
+import time
 
 class MCP3008:
     def __init__(self, chip_select):
@@ -16,6 +16,7 @@ class MCP3008:
 def read_pots(amount):
     for i in range(amount):
         print(mcp.analogInput(i))
+        time.sleep(500)
     print("________________")
 
 
