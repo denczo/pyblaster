@@ -1,10 +1,10 @@
 import spidev
 
 
-class Potentiometer:
-    def __init__(self):
+class MCP3008:
+    def __init__(self, chip_select):
         self.spi = spidev.SpiDev()
-        self.spi.open(1, 0)
+        self.spi.open(1, chip_select)
         self.spi.max_speed_hz = 1000000
 
     def analogInput(self, channel):
@@ -13,24 +13,12 @@ class Potentiometer:
         return data
 
 
-class PotGroup:
-    def __init__(self, amount):
-        self.pots = self.create_pots(amount)
-        self.pot_amount = amount
-
-    def create_pots(self, amount):
-        pots = []
-        for i in range(amount):
-            pot = Potentiometer()
-            pots.append(pot)
-
-        return pots
-
-    def print_pots(self):
-        for i in range(self.pot_amount):
-            print(self.pots[i].analogInput(i))
+def read_pots(amount):
+    for i in range(amount):
+        print(mcp.analogInput(i))
+    print("________________")
 
 
-pots = PotGroup(8)
+mcp = MCP3008(0)
 while True:
-    pots.print_pots()
+    read_pots(5)
