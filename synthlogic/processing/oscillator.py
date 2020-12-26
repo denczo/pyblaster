@@ -20,17 +20,44 @@ def select_waveform(type_wf, t, lfo=0):
         return np.zeros(len(t))
 
 
-def lfo(type_lfo, fm, x, fdelta=1):
+# def lfo_freq(type_lfo, fm, x, fdelta=1)
+#     if fm > 0:
+#         beta = fdelta / fm
+#         t_lfo = t(fm, x)
+#         waveform = select_waveform(type_lfo, t_lfo)
+#         # lfo = select_waveform(OscType.TRIANGLE, t_lfo)
+#         # calculating the integral of the given waveform
+#          lfo = integrate.cumtrapz(waveform, x, initial=0)
+#         # lfo *= beta * 2 * np.pi
+#         lfo = waveform * beta * 2 * np.pi
+#         return lfo
+#     else:
+#         return 0
+
+
+def running_sum(s, l):
+    y = np.zeros(len(s))
+    y[0] = s[0] + l
+    for n in range(1, len(s)):
+        y[n] = s[n] + y[n - 1]
+    return y
+
+
+def lfo(type_lfo, fm, x, l, fdelta=1):
     if fm > 0:
         beta = fdelta / fm
-        t_lfo = t(fm, x)
+        t_lfo = 2 * np.pi * fm * x - np.pi
         waveform = select_waveform(type_lfo, t_lfo)
+        # lfo = select_waveform(OscType.TRIANGLE, t_lfo)
         # calculating the integral of the given waveform
-        lfo = integrate.cumtrapz(waveform, x, initial=0)
-        lfo *= beta * 2 * np.pi
+        # lfo = integrate.cumtrapz(waveform, t_lfo, initial=0)
+        lfo = running_sum(waveform, l)
+        lfo *= beta
+        # lfo *= beta * 2 * np.pi
+        # lfo = waveform * beta * 2 * np.pi
         return lfo
     else:
-        return 0
+        return np.zeros(1024)
 
 
 def carrier(type_wf, fc, x, lfo=0):
@@ -40,7 +67,7 @@ def carrier(type_wf, fc, x, lfo=0):
 
 def harmonics(type_wf, y, fc, x, amount, lfo=0):
     if amount > 0:
-        g = 1/amount
+        g = 1 / amount
         # harmonics e.g. fc = 20hz; i * fc = 40, 60, 80 ...
         for i in range(2, amount + 2):
             fc_harm = fc * i
@@ -73,5 +100,3 @@ class Smoother:
         signal[:self.fadeSeq] = [a * b for a, b in zip(self.coefficients, signal[:self.fadeSeq])]
         signal[:self.fadeSeq] += buffer
         return signal
-
-

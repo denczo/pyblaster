@@ -33,6 +33,9 @@ def create_harmonics(base_freq, amount):
         axs[amount].legend(["result"], bbox_to_anchor=(-0.17, 0.9), loc="upper left")
 
 
-create_harmonics(2, 4)
+#create_harmonics(2, 4)
+#plt.show()
 
-plt.show()
+foo = [1,2,3,4,5,6,7]
+print(foo[:3])
+print(foo[3:])

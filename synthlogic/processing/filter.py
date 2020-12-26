@@ -1,5 +1,6 @@
 import numpy as np
-
+from scipy.fft import fft
+from scipy import signal
 
 # TODO add logic to smooth out discontinuities, when M is changed
 class Allpass:
@@ -31,6 +32,8 @@ class LowPass:
     def __init__(self, M):
         self.M = M
         self.blackmanWindow = self.calcBlackmanWindow(M)
+        self.overlap = []
+        self.overlap_lfo = []
 
     def sinc(self, x, fc):
         return np.sin(2 * np.pi * fc * x) / x
@@ -61,20 +64,36 @@ class LowPass:
     def applyLfo(self, lfo, chunk):
         # average value
         fc = abs(np.mean(lfo))
-        fc = int(fc*100)
+        fc = int(fc*50)
         if fc > 0:
             fc = 0.5/fc
-            kernel = self.filterKernel(fc, self.M)
-            result = np.convolve(chunk, kernel, 'same')
-            return result
         else:
-            return chunk
+            fc = 0.5/0.001
+
+        kernel = self.filterKernel(fc, self.M)
+        chunk_size = 1024
+
+        result_conv = np.convolve(chunk[:chunk_size], kernel, 'full')
+        overlap_size = len(self.overlap_lfo)
+        result = result_conv[:chunk_size]
+        #print(len(result[:overlap_size]),len(result_conv[chunk_size:]), len(result_conv[:chunk_size]), chunk_size, overlap_size)
+        result[:overlap_size] = np.add(result[:overlap_size], self.overlap_lfo)
+        self.overlap_lfo = result_conv[chunk_size:]
+
+        return result
+
 
     def apply(self, chunk, fc):
         if fc > 0:
             fc = 0.5/fc
             kernel = self.filterKernel(fc, self.M)
-            result = np.convolve(chunk, kernel, 'same')
+            chunk_size = 1024
+            result_conv = np.convolve(chunk[:chunk_size], kernel, 'full')
+            overlap_size = len(self.overlap)
+            print(len(result_conv), len(kernel), chunk_size)
+            result = result_conv[:chunk_size]
+            result[:overlap_size] = np.add(result[:overlap_size], self.overlap)
+            self.overlap = result_conv[chunk_size:]
             return result
         else:
             return chunk
