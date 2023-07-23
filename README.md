@@ -20,13 +20,6 @@ It can also be used with a Midi Keyboard.
 
 ___
 
-<img src="http://denicz.info/wp-content/uploads/2020/08/diysynth-945x530.png" width="600" />
-
-##### About
-This is the prototype of a digital synthesizer written in python. It uses the lowlevel library Pyaudio and has a graphical user interface which is written with tkinter.
-It's monophonic and has a reverb effect, lowpass filter and a LFO to control either the lowpass filter or the pitch of the current signal.
-The digital synthesizer can be played with a midi keyboard like the Arturia Minilab MKII.
-
 ##### How to use
 
 install all required libraries
