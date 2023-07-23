@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pylab as plt
 from scipy import signal
-import sympy as sp
 from scipy import integrate
 
 

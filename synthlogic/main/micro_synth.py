@@ -4,10 +4,10 @@ import threading
 import sys
 
 sys.path.append("/home/pi/synth")
-from synthlogic.interfaces.ext_input.midi import MidiInterface
-from synthlogic.processing.envelope import Env
-import synthlogic.processing.oscillator as osc
-from synthlogic.structures.value import DataInterface
+from interfaces.ext_input.midi import MidiInterface
+from processing.envelope import Env
+import processing.oscillator as osc
+from structures.value import DataInterface
 
 
 class Synth:

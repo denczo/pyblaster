@@ -1,7 +1,7 @@
 import numpy as np
 from scipy import signal, integrate
 
-from synthlogic.structures.value import OscType
+from structures.value import OscType
 
 
 # shifted by pi/2, so it starts at 0
