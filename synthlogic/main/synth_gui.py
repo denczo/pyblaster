@@ -6,19 +6,21 @@ import rtmidi
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-from synthlogic.interfaces.gui.button import ButtonGroup
+# from synthlogic.interfaces.gui.button import ButtonGroup
+from interfaces.gui.button import ButtonGroup
+
 import threading
 from PIL import Image, ImageTk
 
 # === basic window configuration
-from synthlogic.interfaces.gui.section import Section
-from synthlogic.interfaces.gui.slider import EffectPair, SliderGroup, Selector
-from synthlogic.interfaces.gui.touchpad import Touchpad
-from synthlogic.main.synth import Synth
-from synthlogic.structures.value import DataInterface, LfoMode, OscType
+from interfaces.gui.section import Section
+from interfaces.gui.slider import EffectPair, SliderGroup, Selector
+from interfaces.gui.touchpad import Touchpad
+from synth import Synth
+from structures.value import DataInterface, LfoMode, OscType
 
 master = Tk()
-master.title("EARDRUM BLASTER")
+master.title("PYBLASTER")
 master.resizable(width=False, height=False)
 # borderless windows
 # master.overrideredirect(1)
@@ -83,9 +85,8 @@ PAD_X = 10
 PAD_Y = 10
 PAD_X_W = 5
 PAD_Y_W = 5
-
-background_image = ImageTk.PhotoImage(file='../icons/background/scratch.jpg')
-touchpad_bg = PhotoImage(file='../icons/touchpad/touchpad.gif')
+background_image = ImageTk.PhotoImage(file='/home/dev/EardrumBlaster/synthlogic/main/icons/background/scratch.jpg')
+touchpad_bg = PhotoImage(file='/home/dev/EardrumBlaster/synthlogic/main/icons/touchpad/touchpad.gif')
 
 # Photo by mohammad alizade on Unsplash
 # Photo by Paweł Czerwiński on Unsplash
@@ -101,19 +102,19 @@ LABELFRAME_FG = 'white'
 group = StringVar()
 group.set(1)
 
-sineIcon = PhotoImage(file="../icons/waveforms/Sine.png")
-triangleIcon = PhotoImage(file="../icons/waveforms/Triangle.png")
-sawtoothIcon = PhotoImage(file="../icons/waveforms/Sawtooth.png")
-squareIcon = PhotoImage(file="../icons/waveforms/Square.png")
+sineIcon = PhotoImage(file="/home/dev/EardrumBlaster/synthlogic/main/icons/waveforms/Sine.png")
+triangleIcon = PhotoImage(file="/home/dev/EardrumBlaster/synthlogic/main/icons/waveforms/Triangle.png")
+sawtoothIcon = PhotoImage(file="/home/dev/EardrumBlaster/synthlogic/main/icons/waveforms/Sawtooth.png")
+squareIcon = PhotoImage(file="/home/dev/EardrumBlaster/synthlogic/main/icons/waveforms/Square.png")
 
 # === oscillator section
-tri = Image.open("../icons/waveforms/Triangle.png")
+tri = Image.open("/home/dev/EardrumBlaster/synthlogic/main/icons/waveforms/Triangle.png")
 tri = tri.resize((30, 30), Image.ANTIALIAS)
 triR = ImageTk.PhotoImage(tri)
-saw = Image.open("../icons/waveforms/Sawtooth.png")
+saw = Image.open("/home/dev/EardrumBlaster/synthlogic/main/icons/waveforms/Sawtooth.png")
 saw = saw.resize((30, 30), Image.ANTIALIAS)
 sawR = ImageTk.PhotoImage(saw)
-sqare = Image.open("../icons/waveforms/Square.png")
+sqare = Image.open("/home/dev/EardrumBlaster/synthlogic/main/icons/waveforms/Square.png")
 sqare = sqare.resize((30, 30), Image.ANTIALIAS)
 sqareR = ImageTk.PhotoImage(sqare)
 
@@ -188,19 +189,19 @@ effect_pair.addOptions(lfoSlider.sliders[0], lfoSlider.sliders[1])
 touchpad.updateOptions(effect_pair)
 
 # === midi dropdown menu
-sectionMidi = Section(master, "MIDI DEVICE", LABELFRAME_FG, LABELFRAME_BG)
-sectionMidi.setPosition(FOURTH, SECOND, 1, 1, (0, PAD_X), (0, PAD_Y))
+# sectionMidi = Section(master, "MIDI DEVICE", LABELFRAME_FG, LABELFRAME_BG)
+# sectionMidi.setPosition(FOURTH, SECOND, 1, 1, (0, PAD_X), (0, PAD_Y))
 
 variable = StringVar()
 
-midi_in = rtmidi.MidiIn()
-midi_devices = midi_in.get_ports()
-midi_devices.append("None")
-variable.set(midi_devices[-1])
-port_count = midi_in.get_port_count()
-midi_options = OptionMenu(sectionMidi.getSection(), variable, *midi_devices, command=lambda x: synth.change_midi_port(midi_devices.index(variable.get()), port_count))
-midi_options.config(width=30, font=('Helvetica', 10))
-midi_options.grid()
+# midi_in = rtmidi.MidiIn()
+# midi_devices = midi_in.get_ports()
+# midi_devices.append("None")
+# variable.set(midi_devices[-1])
+# port_count = midi_in.get_port_count()
+# midi_options = OptionMenu(sectionMidi.getSection(), variable, *midi_devices, command=lambda x: synth.change_midi_port(midi_devices.index(variable.get()), port_count))
+# midi_options.config(width=30, font=('Helvetica', 10))
+# midi_options.grid()
 
 
 mainloop()

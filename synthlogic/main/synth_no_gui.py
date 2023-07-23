@@ -4,7 +4,7 @@ import sys
 import rtmidi
 
 sys.path.append("/home/pi/synth")
-from synthlogic.main.synth import Synth
+from synth import Synth
 
 midi_in = rtmidi.MidiIn()
 

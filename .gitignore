@@ -1,2 +1,3 @@
 # ignore
 stuff/
+__pycache__
