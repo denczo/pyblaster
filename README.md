@@ -5,7 +5,7 @@ Pyblaster is a monophonic syntheziser with Midi, ADSR, LFO and Filters (Lowpass 
 It can also be used with a Midi Keyboard.
 
 <p align="center">
-  <img src="./synthlogic/main/assets/PyBlaster.png" width="50%" />
+  <img src="./assets/PyBlaster.png" width="50%" />
 </p>
 
 ### Features
