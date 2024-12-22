@@ -1,0 +1,26 @@
+{
+    "window": {
+        "title": "PyBlaster",
+        "width": 800,
+        "height": 600,
+        "background_color": "#CFB53B"
+    },
+    "padding": {
+        "pad_x": 10,
+        "pad_y": 10,
+        "pad_x_w": 5,
+        "pad_y_w": 5
+    },
+    "label_frame": {
+        "bg": "#444",
+        "fg": "white"
+    },
+    "image_paths": {
+        "background_image": "./icons/background/scratch.jpg",
+        "touchpad_image": "./icons/touchpad/touchpad.gif",
+        "sine_icon": "./icons/waveforms/Sine.png",
+        "triangle_icon": "./icons/waveforms/Triangle.png",
+        "sawtooth_icon": "./icons/waveforms/Sawtooth.png",
+        "square_icon": "./icons/waveforms/Square.png"
+    }
+}

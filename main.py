@@ -3,38 +3,62 @@ from tkinter import messagebox
 
 import numpy as np
 import rtmidi
+import json
+
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # from synthlogic.interfaces.gui.button import ButtonGroup
-from interfaces.gui.button import ButtonGroup
+from src.interfaces.gui.button import ButtonGroup
 
 import threading
 from PIL import Image, ImageTk
 
 # === basic window configuration
-from interfaces.gui.section import Section
-from interfaces.gui.slider import EffectPair, SliderGroup, Selector
-from interfaces.gui.touchpad import Touchpad
+from src.interfaces.gui.section import Section
+from src.interfaces.gui.slider import EffectPair, SliderGroup, Selector
+from src.interfaces.gui.touchpad import Touchpad
+# from micro_synth import Synth
 from synth import Synth
-from structures.value import DataInterface, LfoMode, OscType
 
-master = Tk()
-master.title("PYBLASTER")
-master.resizable(width=False, height=False)
-# borderless windows
-# master.overrideredirect(1)
-winWidth = 555
-winHeight = 570
-windowSize = str(winHeight) + 'x' + str(winHeight)
-# window spawn in center of screen
-screenWidth = master.winfo_screenwidth()
-screenHeight = master.winfo_screenheight()
-startX = int((screenWidth / 2) - (winWidth / 2))
-startY = int((screenHeight / 2) - (winHeight / 2))
-master.geometry('{}x{}+{}+{}'.format(winWidth, winHeight, startX, startY))
+from src.structures.value import DataInterface, LfoMode, OscType
+
+# Load the configuration
+with open('layout_config.json', 'r') as config_file:
+    config = json.load(config_file)
+
+
+def on_close(master):
+    close = messagebox.askokcancel("Close", "Would you like to close PyBlaster?")
+    if close:
+        synth.running = False
+        master.destroy()
+
+def initSynthGUI():
+    master = Tk()
+    master.title("PyBlaster")
+    master.resizable(width=False, height=False)
+    # borderless windows
+    # master.overrideredirect(1)
+    # window spawn in center of screen
+    screne_width = master.winfo_screenwidth()
+    screen_height = master.winfo_screenheight()
+    win_width = config['window']['width']
+    win_height = config['window']['height']
+    windowSize = str(win_width) + 'x' + str(win_height)
+    startX = int((screne_width / 2) - (win_width / 2))
+    startY = int((screen_height / 2) - (win_height / 2))
+    master.geometry('{}x{}+{}+{}'.format(win_width, win_height, startX, startY))
+    background_color = config['window']['background_color']
+    master.configure(background='#CFB53B')
+    return master
+
+    # master.protocol("WM_DELETE_WINDOW", on_close(master))
+
+master = initSynthGUI()
+
 # synthesizer
-synth = Synth(gui_enabled=True)
+synth = Synth()
 data = DataInterface()
 synth.data_interface = data
 x = np.arange(0, synth.chunk_size)
@@ -59,15 +83,9 @@ def updatePlot():
     master.after(50, updatePlot)
 
 
-def on_close():
-    close = messagebox.askokcancel("Close", "Would you like to close the EARDRUM BLASTER?")
-    if close:
-        synth.running = False
-        master.destroy()
 
-
-master.protocol("WM_DELETE_WINDOW", on_close)
-
+pad_x = config['padding']['pad_x']
+pad_y = config['padding']['pad_y']
 WIDTH_IMG = 50
 WIDTH_RB = WIDTH_IMG
 HEIGHT_RB = WIDTH_RB
@@ -85,15 +103,14 @@ PAD_X = 10
 PAD_Y = 10
 PAD_X_W = 5
 PAD_Y_W = 5
-background_image = ImageTk.PhotoImage(file='/home/dev/EardrumBlaster/synthlogic/main/icons/background/scratch.jpg')
-touchpad_bg = PhotoImage(file='/home/dev/EardrumBlaster/synthlogic/main/icons/touchpad/touchpad.gif')
+background_image = ImageTk.PhotoImage(file='./icons/background/scratch.jpg')
+touchpad_bg = PhotoImage(file='./icons/touchpad/touchpad.gif')
 
 # Photo by mohammad alizade on Unsplash
 # Photo by Paweł Czerwiński on Unsplash
 background_label = Label(image=background_image)
 background_label.image = background_image
 background_label.place(x=0, y=0, relwidth=1, relheight=1)
-master.configure(background='#CFB53B')
 
 LABELFRAME_BG = '#444'
 LABELFRAME_FG = 'white'
@@ -102,19 +119,14 @@ LABELFRAME_FG = 'white'
 group = StringVar()
 group.set(1)
 
-sineIcon = PhotoImage(file="/home/dev/EardrumBlaster/synthlogic/main/icons/waveforms/Sine.png")
-triangleIcon = PhotoImage(file="/home/dev/EardrumBlaster/synthlogic/main/icons/waveforms/Triangle.png")
-sawtoothIcon = PhotoImage(file="/home/dev/EardrumBlaster/synthlogic/main/icons/waveforms/Sawtooth.png")
-squareIcon = PhotoImage(file="/home/dev/EardrumBlaster/synthlogic/main/icons/waveforms/Square.png")
-
 # === oscillator section
-tri = Image.open("/home/dev/EardrumBlaster/synthlogic/main/icons/waveforms/Triangle.png")
+tri = Image.open(config['image_paths']['triangle_icon'])
 tri = tri.resize((30, 30), Image.ANTIALIAS)
 triR = ImageTk.PhotoImage(tri)
-saw = Image.open("/home/dev/EardrumBlaster/synthlogic/main/icons/waveforms/Sawtooth.png")
+saw = Image.open(config['image_paths']['sawtooth_icon'])
 saw = saw.resize((30, 30), Image.ANTIALIAS)
 sawR = ImageTk.PhotoImage(saw)
-sqare = Image.open("/home/dev/EardrumBlaster/synthlogic/main/icons/waveforms/Square.png")
+sqare = Image.open(config['image_paths']['square_icon'])
 sqare = sqare.resize((30, 30), Image.ANTIALIAS)
 sqareR = ImageTk.PhotoImage(sqare)
 

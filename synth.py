@@ -7,11 +7,11 @@ import sys
 from scipy.io import wavfile
 
 sys.path.append("/home/pi/synth")
-from interfaces.ext_input.midi import MidiInterface
-from processing.envelope import Env
-from processing.filter import LowPass, Allpass
-import processing.oscillator as osc
-from structures.value import DataInterface
+from src.interfaces.ext_input.midi import MidiInterface
+from src.processing.envelope import Env
+from src.processing.filter import LowPass, Allpass
+import src.processing.oscillator as osc
+from src.structures.value import DataInterface
 
 
 class Synth:

@@ -9,9 +9,9 @@ class Touchpad:
         self.height = height
         self.width = width
         self.canvas = Canvas(parent, width=width, height=height, highlightthickness=0, relief='ridge', bg='#444')
-        self.background = ImageTk.PhotoImage(Image.open('/home/dev/EardrumBlaster/synthlogic/main/icons/touchpad/touchpad.gif').resize((width, height), Image.ANTIALIAS))
+        self.background = ImageTk.PhotoImage(Image.open('.//icons/touchpad/touchpad.gif').resize((width, height), Image.ANTIALIAS))
         self.canvas.create_image(0, 0, image=self.background, anchor=NW)
-        self.cursor = ImageTk.PhotoImage(Image.open('/home/dev/EardrumBlaster/synthlogic/main/icons/touchpad/cursor.png'))
+        self.cursor = ImageTk.PhotoImage(Image.open('.//icons/touchpad/cursor.png'))
         self.imageId = self.canvas.create_image(10, 10, image=self.cursor)
         self.canvas.itemconfig(self.imageId, image=self.cursor)
         self.canvas.bind('<B1-Motion>', self.mouseCoords)
